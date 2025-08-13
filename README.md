@@ -1,5 +1,7 @@
 # GENETIS-RHINO
 
+[![CI](https://github.com/osu-particle-astrophysics/GENETIS-RHINO/actions/workflows/ci.yml/badge.svg)](https://github.com/osu-particle-astrophysics/GENETIS-RHINO/actions/workflows/ci.yml)
+
 ## Developer notes
 
 ### Linter
