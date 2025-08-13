@@ -44,15 +44,3 @@ ignore = [
     "D203",
     "D212",
 ]
-
-[tool.ruff.lint.flake8-annotations]
-mypy-init-return = true    # Dont need to return none on __init__
-suppress-none-returning = false
-suppress-dummy-args = false
-allow-star-arg-any = false
-
-[tool.ruff.lint.pylint]
-max-args = 10
-
-[tool.ruff.lint.per-file-ignores]
-"src/nebulous/testing/*.py" = ["S101"]
