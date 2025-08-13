@@ -1,0 +1,46 @@
+[tool.ruff]
+src = ["src"]
+target-version = "py311"
+line-length = 150
+
+# Only necessary rules for now
+[tool.ruff.lint]
+select = [
+    'ALL'
+]
+
+ignore = [
+    # Eventually D101 and D102 should be removed   
+
+    "D401",    #imperative mood 
+    "D404",    
+
+    "B027",
+    "TD004", 
+    "TD003",
+    "RET505",    #trailing else
+    "RET504",    #unnecessary assignment before return
+    "T201",    #print statements
+    "EM102",    #no f strings
+    "EM101",    #no string literals in error messages
+    "TRY003",
+    "FIX002",
+    "TD002",
+    "S311",
+    "PTH123",
+    "SIM110",
+
+    #Things to potentially take out after active development
+    "ERA001",    #commented out code
+
+    # Needed for python 3.9
+    "UP035",
+    "UP045",
+
+    # Imports
+    "TID252",
+
+    #Resolves ruff conflicts
+    "D203",
+    "D212",
+]
