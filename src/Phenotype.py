@@ -10,7 +10,6 @@ class Phenotype:
                fitness_score (float): The fitness score of the individual.
            """
 
-
     def __init__(self, id, parent1_id, parent2_id, generation_created, fitness_score):
         """
             Initializes a Phenotype object.
@@ -22,6 +21,7 @@ class Phenotype:
                     generation_created (int): Which generation the individual was created.
                     fitness_score (float): The fitness score of the individual.
                 """
+
         self.id = id
         self.parent1_id = parent1_id
         self.parent2_id = parent2_id

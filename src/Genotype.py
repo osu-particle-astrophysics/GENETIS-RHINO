@@ -11,7 +11,6 @@ class Genotype:
            waveguide_height (float): The height of the waveguide.
        """
 
-
     def __init__(self, num_wall_pairs, height, waveguide_length, waveguide_height):
         """
             Initializes a Genotype object.
@@ -23,6 +22,7 @@ class Genotype:
                     waveguide_length (float): The length of the waveguide.
                     waveguide_height (float): The height of the waveguide.
                 """
+
         self.num_wall_pairs = num_wall_pairs
         self.height = height
         self.waveguide_length = waveguide_length

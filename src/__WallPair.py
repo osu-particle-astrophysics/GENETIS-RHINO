@@ -11,7 +11,6 @@ class __WallPair:
            ridge_thickness (float): The thickness of the ridge.
        """
 
-
     def __init__(self, width, angle, has_ridge, ridge_width, ridge_height, ridge_thickness):
         """
             Initializes a WallPair object.
@@ -24,6 +23,7 @@ class __WallPair:
                    ridge_height (float): The height of the ridge.
                    ridge_thickness (float): The thickness of the ridge.
                """
+
         self.width = width
         self.angle = angle
         self.has_ridge = has_ridge
