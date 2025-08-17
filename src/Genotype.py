@@ -1,6 +1,7 @@
 import random
-from src.WallPair import WallPair
 import sys
+
+from src.WallPair import WallPair
 
 
 class Genotype:
