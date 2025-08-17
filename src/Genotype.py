@@ -1,6 +1,6 @@
 import random
-import sys
 from src.WallPair import WallPair
+import sys
 
 
 class Genotype:
