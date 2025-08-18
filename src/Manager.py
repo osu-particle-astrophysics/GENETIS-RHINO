@@ -27,8 +27,8 @@ class Manager:
         :rtype: None
         """
         for individual in range(pop_size):
-            # create new random Genotype
-            g = Genotype().generate(2, self.rand)
+            # create new random Genotype with 4 sides
+            g = Genotype().generate(4, self.rand)
 
             # assign phenotype to genotype
             p = Phenotype(g, str(individual), "None", 0)
