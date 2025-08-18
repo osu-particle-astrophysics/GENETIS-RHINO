@@ -12,8 +12,7 @@ This module provides:
 
 
 class Genotype:
-    """
-    A class representing an individual antenna's genotype.
+    """A class representing an individual antenna's genotype.
 
     :param height: The height of the antenna.
     :type height: float, optional
@@ -40,8 +39,7 @@ class Genotype:
                  waveguide_height: Optional[float] = None,
                  waveguide_length: Optional[float] = None,
                  walls: Optional[list] = None) -> None:
-        """
-        The constructor for a Genotype object (an individual antenna's
+        """The constructor for a Genotype object (an individual antenna's
         genotype).
 
         :param height: The height of the antenna.
@@ -66,8 +64,7 @@ class Genotype:
         self.walls = walls
 
     def generate(self, num_wall_pairs: int, rand: random.Random):
-        """
-        Makes a Genotype object with randomly generated genes.
+        """Makes a Genotype object with randomly generated genes.
 
         :param num_wall_pairs: number of WallPair objects
         :param num_wall_pairs: int
@@ -99,8 +96,7 @@ class Genotype:
         return Genotype(height, waveguide_height, waveguide_length, walls)
 
     def mutate(self, per_site_mut_rate: float, mut_effect_size: float, rand: random.Random):
-        """
-        Mutates a genotype.
+        """Mutates a genotype.
 
         :param per_site_mut_rate: The % chance any given variable in the Genotype will be mutated.
         :type per_site_mut_rate: float
