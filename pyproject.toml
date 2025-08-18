@@ -44,3 +44,6 @@ ignore = [
     "D203",
     "D212",
 ]
+
+[tool.ruff.lint.pylint]
+max-args = 10
