@@ -12,18 +12,19 @@ This module provides:
 
 
 class Genotype:
-    """
-        A class representing an individual antenna's genotype.
+    """Genotype class.
 
-        :param height: The height of the antenna.
-        :type height: float, optional
-        :param waveguide_height: The height of the waveguide.
-        :type waveguide_height: float, optional
-        :param waveguide_length: The length of the waveguide.
-        :type waveguide_length: float, optional
-        :param walls: A list of WallPair objects that comprise the walls of the
-        antenna.
-        :type walls: list, optional
+    A class representing an individual antenna's genotype.
+
+    :param height: The height of the antenna.
+    :type height: float, optional
+    :param waveguide_height: The height of the waveguide.
+    :type waveguide_height: float, optional
+    :param waveguide_length: The length of the waveguide.
+    :type waveguide_length: float, optional
+    :param walls: A list of WallPair objects that comprise the walls of the
+    antenna.
+    :type walls: list, optional
     """
 
     # Logical constraint constants  #TODO set to correct units and values
