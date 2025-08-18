@@ -137,8 +137,8 @@ class Genotype:
                                                 rand.gauss(0, mut_effect_size))
         # TODO add WallPair mutating
 
-    # TODO func to construct one from 1 parent
+    # TODO KATE - func to construct one from 1 parent
 
-    # TODO func to construct from 2 parents with crossover -- do later
+    # TODO KATE - func to construct from 2 parents with crossover (not for v1)
 
-    # TODO write to CSV line
+    # TODO ALEX - func to write Genotype genes to CSV line

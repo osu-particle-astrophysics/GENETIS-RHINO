@@ -18,13 +18,13 @@ class PhenotypeTest(unittest.TestCase):
         g = Genotype().generate(2, random.Random(1))
 
         # Build a valid Phenotype object.
-        p = Phenotype(g, "Kate", "Mom", 1, 2.0)
+        p = Phenotype(g, "Kate", "None", 0)
 
         self.assertIsInstance(p.genotype, Genotype)
-        self.assertEqual(p.id, "Kate")
-        self.assertEqual(p.parent_id, "Mom")
-        self.assertEqual(p.generation_created, 1)
-        self.assertEqual(p.fitness_score, 2)
+        self.assertEqual(p.indv_id, "Kate")
+        self.assertEqual(p.parent_id, "None")
+        self.assertEqual(p.generation_created, 0)
+        self.assertEqual(p.fitness_score, None)
 
 
 if __name__ == '__main__':
