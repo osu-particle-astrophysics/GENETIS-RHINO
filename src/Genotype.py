@@ -18,7 +18,7 @@ class Genotype:
     :type walls: list, optional
     """
 
-    # Logical constraint constants  #FIXME set to correct units and values
+    # Logical constraint constants  #TODO set to correct units and values
     MIN_HEIGHT = 0.0              # cm; exclusive
     MAX_HEIGHT = 100.0            # cm; inclusive
 
