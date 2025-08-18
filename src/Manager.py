@@ -8,9 +8,9 @@ from src.Phenotype import Phenotype
 class Manager:
     """Manager class."""
 
-    def __init__(self):
-
-        self.seed = 1  #FIXME this should be read into the program not hard
+    def __init__(self) -> None:
+        """Constructor."""
+        self.seed = 1  #TODO this should be read into the program not hard
         # coded
         self.rand = random.seed(self.seed)
         self.population = []
@@ -26,19 +26,15 @@ class Manager:
         :type pop_size: int
         :rtype: None
         """
-        indv_id_counter = 0
-        for _ in range(pop_size):
+        for individual in range(pop_size):
             # create new random Genotype
             g = Genotype().generate(2, self.rand)
 
             # assign phenotype to genotype
-            p = Phenotype(g, str(indv_id_counter), "None", 0)
+            p = Phenotype(g, str(individual), "None", 0)
 
             # append phenotype to population
             self.population.append(p)
-
-            # increment indv_id_counter
-            indv_id_counter += 1
 
     # TODO method to return best individual in population
 
