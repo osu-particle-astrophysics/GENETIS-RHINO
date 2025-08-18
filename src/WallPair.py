@@ -21,39 +21,48 @@ class WallPair:
     true if all ridge variables are greater than 0. Initialized as False.
     :type has_ridge: bool, optional
     :param angle: The angle of the wall pair. Must be between 0 and 90
-    degrees (inclusive). Defaults to None.
+    degrees. Defaults to None.
     :type angle: float, optional
-    :param ridge_height: The height of the ridge. Must be between 0 cm and
-    100 cm (inclusive).
+    :param ridge_height: The height of the ridge as a percent of the horn.
     :type ridge_height: float, optional
-    :param ridge_width: The width of the ridge. Must be between 0 cm and
-    100 cm (inclusive).
-    :type ridge_width: float, optional
-    :param ridge_thickness: The thickness of the ridge. Must be between 0 cm
-    and 100 cm (inclusive).
-    :type ridge_thickness: float, optional
+    :param ridge_width_top: The width of the ridge as a percent of wall width
+    at the top of the horn.
+    :type ridge_width_top: float, optional
+    :param ridge_width_top: The width of the ridge as a percent of wall width
+    at the top of the horn.
+    :type ridge_width_top: float, optional
+    :param ridge_thickness_top: The thickness of the ridge as a percent of the
+    wall width
+    :type ridge_thickness_top: float, optional
     """
 
-    # Logical constraint constants  #TODO set to correct units and values
-    MIN_ANGLE = 0.0             # degrees; exclusive
-    MAX_ANGLE = 90.0            # degrees; inclusive
+    # Logical constraint constants
+    MIN_ANGLE = 0.0              # degrees; exclusive
+    MAX_ANGLE = 90.0             # degrees; inclusive
 
-    MIN_RIDGE_HEIGHT = 0.0      # cm; inclusive
-    MAX_RIDGE_HEIGHT = 100.0    # cm; inclusive
+    MIN_RIDGE_HEIGHT = 0.0       # % of horn; exclusive
+    MAX_RIDGE_HEIGHT = 100.0     # % of horn; inclusive
 
-    MIN_RIDGE_WIDTH = 0.0       # cm; inclusive
-    MAX_RIDGE_WIDTH = 100.0     # cm; inclusive
+    MIN_RIDGE_WIDTH_TOP = 0.0    # % of wall width at top of horn; inclusive
+    MAX_RIDGE_WIDTH_TOP = 100.0  # %; inclusive
 
-    MIN_RIDGE_THICKNESS = 0.0   # cm; inclusive
-    MAX_RIDGE_THICKNESS = 100.0 # cm; inclusive
+    MIN_RIDGE_WIDTH_BOTTOM = 0.0     # %; inclusive
+    MAX_RIDGE_WIDTH_BOTTOM = 100.0   # %; inclusive
 
-    def __init__(self, width: Optional[float] = None,
-                 angle: Optional[float] = None,
+    MIN_RIDGE_THICKNESS_TOP = 0.0    # % of distance to the middle of the
+    # horn; inclusive
+    MAX_RIDGE_THICKNESS_TOP = 100.0  # %; inclusive
+
+    MIN_RIDGE_THICKNESS_BOTTOM = 0.0    # %; % of distance to the middle of
+    # the horn; inclusive
+    MAX_RIDGE_THICKNESS_BOTTOM = 100.0  # %; inclusive
+
+    def __init__(self, angle: Optional[float] = None,
                  ridge_height: Optional[float] = None,
                  ridge_width_top: Optional[float] = None,
                  ridge_width_bottom: Optional[float] = None,
                  ridge_thickness_top: Optional[float] = None,
-                 ridge_thickness_botoom: Optional[float = None) -> None:
+                 ridge_thickness_bottom: Optional[float] = None) -> None:
                     
         """
         Constructor for a WallPair object.
@@ -63,21 +72,32 @@ class WallPair:
         :param angle: The angle of the wall pair. Must be between 0 and 90
         degrees. Defaults to None.
         :type angle: float, optional
-        :param ridge_height: The height of the ridge. Must be between 0 cm
-        and 100 cm (inclusive).
+        :param ridge_height: The height of the ridge as a percentage of the
+        total horn height. Starts from bottom of horn. Must be between 0%
+        and 100%(inclusive).
         :type ridge_height: float, optional
-        :param ridge_width: The width of the ridge. Must be between 0 cm and
-        100 cm (inclusive).
-        :type ridge_width: float, optional
-        :param ridge_thickness: The thickness of the ridge. Must be between 0 cm
+        :param ridge_width_top: The width of the ridge at the top of the horn.
+        Must be between 0 cm and 100 cm (inclusive).
+        :type ridge_width_top: float, optional
+        :param ridge_width_bottom: The width of the ridge at the bottom of
+        the .
+        Must be between 0 cm and 100 cm (inclusive).
+        :type ridge_width_bottom: float, optional
+        :param ridge_thickness_top: The thickness of the ridge. Must be
+        between 0 cm
         and 100 cm (inclusive).
-        :type ridge_thickness: float, optional
+        :type ridge_thickness_top: float, optional
+        :param ridge_thickness_bottom: The thickness of the ridge at the
+        bottom of the . Must be between 0 cm and 100 cm (inclusive).
+        :type ridge_thickness_bottom: float, optional
         """
         self.has_ridge = False
         self.angle = angle
         self.ridge_height = ridge_height
-        self.ridge_width = ridge_width
-        self.ridge_thickness = ridge_thickness
+        self.ridge_width_top = ridge_width_top
+        self.ridge_width_bottom = ridge_width_bottom
+        self.ridge_thickness_top = ridge_thickness_top
+        self.ridge_thickness_bottom = ridge_thickness_bottom
 
     def generate_without_ridge(self, rand: random.Random) -> object:
         """
@@ -98,15 +118,22 @@ class WallPair:
                                       WallPair.MAX_RIDGE_HEIGHT)
 
         # Generate a random ridge_width within the specified constraints
-        ridge_width = rand.uniform(WallPair.MIN_RIDGE_WIDTH,
-                                     WallPair.MAX_RIDGE_WIDTH)
+        ridge_width_top = rand.uniform(WallPair.MIN_RIDGE_WIDTH_TOP,
+                                     WallPair.MAX_RIDGE_WIDTH_TOP)
+
+        ridge_width_bottom = rand.uniform(WallPair.MIN_RIDGE_WIDTH_BOTTOM,
+                                       WallPair.MAX_RIDGE_WIDTH_BOTTOM)
 
         # Generate a random ridge_thickness within the specified constraints
-        ridge_thickness = rand.uniform(WallPair.MIN_RIDGE_THICKNESS,
-                                         WallPair.MAX_RIDGE_THICKNESS)
+        ridge_thickness_top = rand.uniform(WallPair.MIN_RIDGE_THICKNESS_TOP,
+                                         WallPair.MAX_RIDGE_THICKNESS_TOP)
 
-        return WallPair(width, angle, ridge_height, ridge_width,
-                        ridge_thickness)
+        ridge_thickness_bottom = rand.uniform(
+            WallPair.MIN_RIDGE_THICKNESS_BOTTOM,
+                                       WallPair.MAX_RIDGE_THICKNESS_BOTTOM)
+
+        return WallPair(angle, ridge_height, ridge_width_top, ridge_width_bottom,
+                        ridge_thickness_top, ridge_thickness_bottom)
 
     def generate_with_ridge(self, rand: random.Random) -> object:
         """
@@ -125,13 +152,24 @@ class WallPair:
             wp.ridge_height = rand.uniform(WallPair.MIN_RIDGE_HEIGHT,
                                              WallPair.MAX_RIDGE_HEIGHT)
 
-        while wp.ridge_width == 0:
-            wp.ridge_width = rand.uniform(WallPair.MIN_RIDGE_WIDTH,
-                                            WallPair.MAX_RIDGE_WIDTH)
+        while wp.ridge_width_top == 0:
+            wp.ridge_width_top = rand.uniform(WallPair.MIN_RIDGE_WIDTH_TOP,
+                                            WallPair.MAX_RIDGE_WIDTH_TOP)
 
-        while wp.ridge_thickness == 0:
-            wp.ridge_thickness = rand.uniform(WallPair.MIN_RIDGE_THICKNESS,
-                                                WallPair.MAX_RIDGE_THICKNESS)
+        while wp.ridge_width_bottom == 0:
+            wp.ridge_width_bottom = rand.uniform(
+                WallPair.MIN_RIDGE_WIDTH_BOTTOM,
+                WallPair.MAX_RIDGE_WIDTH_BOTTOM)
+
+        while wp.ridge_thickness_top == 0:
+            wp.ridge_thickness_top = rand.uniform(
+                WallPair.MIN_RIDGE_THICKNESS_TOP,
+                WallPair.MAX_RIDGE_THICKNESS_TOP)
+
+        while wp.ridge_thickness_bottom == 0:
+            wp.ridge_thickness_bottom = rand.uniform(
+                WallPair.MIN_RIDGE_THICKNESS_BOTTOM,
+                WallPair.MAX_RIDGE_THICKNESS_BOTTOM)
 
         # Express ridge
         wp.has_ridge = True

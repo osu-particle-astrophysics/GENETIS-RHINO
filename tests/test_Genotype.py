@@ -43,9 +43,9 @@ class GenotypeTest(unittest.TestCase):
         rand = random.Random(GenotypeTest.SEED)
         g = Genotype().generate(2, rand)
 
-        self.assertEqual(g.height, 13.436424411240122)
-        self.assertEqual(g.waveguide_height, 84.74337369372327)
-        self.assertEqual(g.waveguide_length, 76.3774618976614)
+        self.assertEqual(g.height, 2.4030927323372038)
+        self.assertEqual(g.waveguide_height, 877.9469895497862)
+        self.assertEqual(g.waveguide_length, 787.3971570789527)
         self.assertIsInstance(g.walls[0], WallPair)
         self.assertIsInstance(g.walls[1], WallPair)
 
@@ -56,9 +56,9 @@ class GenotypeTest(unittest.TestCase):
         g.mutate(GenotypeTest.PER_SITE_MUT_RATE,
                  GenotypeTest.MUT_AMPLITUDE, rand)
 
-        self.assertEqual(g.height, 13.285841511114047)
-        self.assertEqual(g.waveguide_height, 84.79717341158937)
-        self.assertEqual(g.waveguide_length, 76.3774618976614)
+        self.assertEqual(g.height, 2.4030927323372038)
+        self.assertEqual(g.waveguide_height, 878.1496524811672)
+        self.assertEqual(g.waveguide_length, 787.3245830694012)
 
 if __name__ == '__main__':
     unittest.main()

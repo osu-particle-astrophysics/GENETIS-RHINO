@@ -1,5 +1,7 @@
 """Class for constructing an antenna's Phenotype and acting upon it."""
+import copy
 from typing import Optional
+import random
 
 
 class Phenotype:
@@ -45,3 +47,26 @@ class Phenotype:
         self.parent_id = parent_id
         self.generation_created = generation_created
         self.fitness_score = None # TODO replace with calc_fitness_score call
+
+    def make_offspring(self, per_site_mut_rate: float, mut_effect_size: float, rand: random.Random) -> object:
+        """
+        Make offspring.
+
+        Makes an offspring from the individual Genotype this is called on.
+
+        :param per_site_mut_rate: The % chance any given variable in the Genotype will be mutated.
+        :type per_site_mut_rate: float
+        :param mut_effect_size: The mutation amplitude when a mutation takes place.
+        :type mut_effect_size: float
+        :param rand: Random number generator object.
+        :type rand: random.Random
+        :rtype: None
+        """
+
+        # make a copy of parent 1 to be the offspring
+        offspring = copy.deepcopy(self)
+
+        # mutate offspring
+        offspring.genotype.mutate(per_site_mut_rate, mut_effect_size, rand)
+
+        return offspring
