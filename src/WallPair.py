@@ -15,15 +15,11 @@ class WallPair:
     WallPair class.
 
     This is a helper class representing a wall pair.
-    A wall pair is the two sides of one sheet of material used to make an
-    antenna wall.
+    A wall pair is the two walls opposite one another on an antenna.
 
     :param has_ridge: Whether the wall pair has a ridge or not. Can only be
     true if all ridge variables are greater than 0. Initialized as False.
     :type has_ridge: bool, optional
-    :param width: The width of the wall pair. Must be > 0 cm and <= 100 cm.
-    Defaults to None.
-    :type width: float, optional
     :param angle: The angle of the wall pair. Must be between 0 and 90
     degrees (inclusive). Defaults to None.
     :type angle: float, optional
@@ -39,11 +35,8 @@ class WallPair:
     """
 
     # Logical constraint constants  #TODO set to correct units and values
-    MIN_WIDTH = 0.0             # cm; exclusive
-    MAX_WIDTH = 100.0           # cm; inclusive
-
     MIN_ANGLE = 0.0             # degrees; exclusive
-    MAX_ANGLE = 100.0           # degrees; inclusive
+    MAX_ANGLE = 90.0            # degrees; inclusive
 
     MIN_RIDGE_HEIGHT = 0.0      # cm; inclusive
     MAX_RIDGE_HEIGHT = 100.0    # cm; inclusive
@@ -57,18 +50,18 @@ class WallPair:
     def __init__(self, width: Optional[float] = None,
                  angle: Optional[float] = None,
                  ridge_height: Optional[float] = None,
-                 ridge_width: Optional[float] = None,
-                 ridge_thickness: Optional[float] = None) -> None:
+                 ridge_width_top: Optional[float] = None,
+                 ridge_width_bottom: Optional[float] = None,
+                 ridge_thickness_top: Optional[float] = None,
+                 ridge_thickness_botoom: Optional[float = None) -> None:
+                    
         """
         Constructor for a WallPair object.
 
         Constructs a WallPair object with no ridge.
 
-        :param width: The width of the wall pair. Must be > 0 cm and <= 100 cm.
-        Defaults to None.
-        :type width: float, optional
         :param angle: The angle of the wall pair. Must be between 0 and 90
-        degrees (inclusive). Defaults to None.
+        degrees. Defaults to None.
         :type angle: float, optional
         :param ridge_height: The height of the ridge. Must be between 0 cm
         and 100 cm (inclusive).
@@ -81,7 +74,6 @@ class WallPair:
         :type ridge_thickness: float, optional
         """
         self.has_ridge = False
-        self.width = width
         self.angle = angle
         self.ridge_height = ridge_height
         self.ridge_width = ridge_width
@@ -98,11 +90,6 @@ class WallPair:
         :return: A randomly generated WallPair object with no ridge.
         :rtype: WallPair object
         """
-        # Generate a random width within the specified constraints
-        width = WallPair.MIN_WIDTH
-        while width == WallPair.MIN_WIDTH:  # exclude min
-            width = rand.uniform(WallPair.MIN_WIDTH, WallPair.MAX_WIDTH)
-
         # Generate a random angle within the specified constraints
         angle = rand.uniform(WallPair.MIN_ANGLE, WallPair.MAX_ANGLE)
 
