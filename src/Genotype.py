@@ -53,6 +53,7 @@ class Genotype:
         :type walls: list, optional
         :rtype: None
         """
+
         # Make sure the list of walls provided to the constructor is valid.
         if walls is not None:
             if not all(isinstance(wall_pair, WallPair) for wall_pair in walls):
@@ -74,6 +75,7 @@ class Genotype:
         :return: Genotype object
         :rtype: Genotype
         """
+
         # generate valid random height
         height = Genotype.MIN_HEIGHT
         while height == Genotype.MIN_HEIGHT: # exclude min
@@ -108,6 +110,7 @@ class Genotype:
         :type rand: random.Random
         :rtype: None
         """
+
         core_genes = ["height", "waveguide_height", "waveguide_length"]
 
         # Iterate over each gene in the Genotype
