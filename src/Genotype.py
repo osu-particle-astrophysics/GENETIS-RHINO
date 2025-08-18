@@ -60,16 +60,15 @@ class Genotype:
         :rtype: None
         """
         # Make sure the list of walls provided to the constructor is valid.
-        if walls is not None:
-            if not all(isinstance(wall_pair, WallPair) for wall_pair in walls):
-                raise ValueError("walls must be a list of WallPair objects.")
+        if walls is not None and not all(isinstance(wall_pair, WallPair) for wall_pair in walls):
+            raise ValueError("walls must be a list of WallPair objects.")
 
         self.height = height
         self.waveguide_height = waveguide_height
         self.waveguide_length = waveguide_length
         self.walls = walls
 
-    def generate(self, num_wall_pairs: int, rand: random.Random):
+    def generate(self, num_wall_pairs: int, rand: random.Random) -> object:
         """
         Generate Genotype.
 
