@@ -152,7 +152,7 @@ class Genotype:
     def _mutate_walls(self, walls: list, per_site_mut_rate: float,
                       mut_effect_size: float, rand: random.Random) -> None:
         """
-        Mutate WallPair genes
+        Mutate WallPair genes.
 
         A helper function to mutate a Genotype's WallPair genes. Iterates
         through each WallPair object in the list of walls and over each gene
