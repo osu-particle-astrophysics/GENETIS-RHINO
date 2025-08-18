@@ -3,14 +3,15 @@ from typing import Optional
 
 from src.WallPair import WallPair
 
-"""Class for constructing an antenna Genotype and acting upon it
+"""Class for constructing an antenna Genotype and acting upon it.
 
 This module provides:
 - generate: randomly generates a new Genotype
 - mutate: mutates the Genotype
 """
 class Genotype:
-    """A class representing an individual antenna's genotype.
+    """
+    A class representing an individual antenna's genotype.
 
     :param height: The height of the antenna.
     :type height: float, optional
@@ -21,8 +22,6 @@ class Genotype:
     :param walls: A list of WallPair objects that comprise the walls of the
     antenna.
     :type walls: list, optional
-    :return: Nothing
-    :rtype: None
     """
 
     # Logical constraint constants  #TODO set to correct units and values
@@ -38,8 +37,9 @@ class Genotype:
     def __init__(self, height: Optional[float] = None,
                  waveguide_height: Optional[float] = None,
                  waveguide_length: Optional[float] = None,
-                 walls: Optional[list] = None):
-        """The constructor for a Genotype object (an individual antenna's
+                 walls: Optional[list] = None) -> None:
+        """
+        The constructor for a Genotype object (an individual antenna's
         genotype).
 
         :param height: The height of the antenna.
@@ -51,7 +51,6 @@ class Genotype:
         :param walls: A list of WallPair objects that comprise the walls of the
         antenna.
         :type walls: list, optional
-        :return: Nothing
         :rtype: None
         """
         # Make sure the list of walls provided to the constructor is valid.
@@ -65,7 +64,8 @@ class Genotype:
         self.walls = walls
 
     def generate(self, num_wall_pairs: int, rand: random.Random):
-        """Makes a Genotype object with randomly generated genes.
+        """
+        Makes a Genotype object with randomly generated genes.
 
         :param num_wall_pairs: number of WallPair objects
         :param num_wall_pairs: int
@@ -97,7 +97,8 @@ class Genotype:
         return Genotype(height, waveguide_height, waveguide_length, walls)
 
     def mutate(self, per_site_mut_rate: float, mut_effect_size: float, rand: random.Random):
-        """Mutates a genotype.
+        """
+        Mutates a genotype.
 
         :param per_site_mut_rate: The % chance any given variable in the Genotype will be mutated.
         :type per_site_mut_rate: float
