@@ -1,4 +1,5 @@
 import random
+from typing import Optional
 
 from src.WallPair import WallPair
 
@@ -28,10 +29,10 @@ class Genotype:
     MIN_WAVEGUIDE_LENGTH = 0.0    # cm; exclusive
     MAX_WAVEGUIDE_LENGTH = 100.0  # cm; inclusive
 
-    def __init__(self, height: float = None,
-                 waveguide_height: float = None,
-                 waveguide_length: float = None,
-                 walls: list = None):
+    def __init__(self, height: Optional[float] = None,
+                 waveguide_height: Optional[float] = None,
+                 waveguide_length: Optional[float] = None,
+                 walls: Optional[list] = None):
         """
         The constructor for a Genotype object (an individual antenna's
         genotype).

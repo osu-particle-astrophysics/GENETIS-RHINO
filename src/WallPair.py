@@ -1,4 +1,5 @@
 import random
+from typing import Optional
 
 
 class WallPair:
@@ -42,12 +43,12 @@ class WallPair:
     MIN_RIDGE_THICKNESS = 0.0   # cm; inclusive
     MAX_RIDGE_THICKNESS = 100.0 # cm; inclusive
 
-    def __init__(self, has_ridge: bool = None,
-                 width: float = None,
-                 angle: float = None,
-                 ridge_height: float = None,
-                 ridge_width: float = None,
-                 ridge_thickness: float = None):
+    def __init__(self, has_ridge: Optional[bool] = None,
+                 width: Optional[float] = None,
+                 angle: Optional[float] = None,
+                 ridge_height: Optional[float] = None,
+                 ridge_width: Optional[float] = None,
+                 ridge_thickness: Optional[float] = None):
         """Constructor method"""
         # If has_ridge is True, make sure all ridge variables are greater
         # than 0.
