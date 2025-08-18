@@ -1,11 +1,21 @@
+"""Class for constructing a WallPair and acting upon it.
+
+This module provides:
+- generate_without_ridge: randomly generates a WallPair without a ridge.
+- generate_with_ridge: randomly generates a WallPair with a ridge.
+- generate_list: randomly generates a list of WallPairs.
+"""
 import random
 from typing import Optional
 
 
 class WallPair:
     """
-    This is a helper class representing a wall pair. A wall pair is the
-    two sides of one sheet of material used to make an antenna wall.
+    WallPair class.
+
+    This is a helper class representing a wall pair.
+    A wall pair is the two sides of one sheet of material used to make an
+    antenna wall.
 
     :param has_ridge: Whether the wall pair has a ridge or not. Can only be
     true if all ridge variables are greater than 0. Defaults to None.
@@ -27,7 +37,7 @@ class WallPair:
     :type ridge_thickness: float, optional
     """
 
-    # Logical constraint constants  #FIXME set to correct units and values
+    # Logical constraint constants  #TODO set to correct units and values
     MIN_WIDTH = 0.0             # cm; exclusive
     MAX_WIDTH = 100.0           # cm; inclusive
 
@@ -48,7 +58,7 @@ class WallPair:
                  angle: Optional[float] = None,
                  ridge_height: Optional[float] = None,
                  ridge_width: Optional[float] = None,
-                 ridge_thickness: Optional[float] = None):
+                 ridge_thickness: Optional[float] = None) -> None:
         """Constructor method"""
         # If has_ridge is True, make sure all ridge variables are greater
         # than 0.
@@ -64,8 +74,10 @@ class WallPair:
         self.ridge_width = ridge_width
         self.ridge_thickness = ridge_thickness
 
-    def generate_without_ridge(self, rand: random.Random):
+    def generate_without_ridge(self, rand: random.Random) -> object:
         """
+        Generates a WallPair without a ridge.
+
         Generates a random WallPair object with no ridge.
 
         :param rand: The random number generator.
@@ -99,7 +111,7 @@ class WallPair:
         return WallPair(has_ridge, width, angle, ridge_height, ridge_width,
                         ridge_thickness)
 
-    def generate_with_ridge(self, rand: random.Random):
+    def generate_with_ridge(self, rand: random.Random) -> object:
         """
         Generates a random WallPair object with a ridge.
 
@@ -129,7 +141,7 @@ class WallPair:
 
         return wp
 
-    def generate_list(self, num_wall_pairs: int, rand: random.Random):
+    def generate_list(self, num_wall_pairs: int, rand: random.Random) -> list:
         """
         Generates a list of randomly generated WallPair objects.
 
