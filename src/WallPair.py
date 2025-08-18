@@ -19,7 +19,7 @@ class WallPair:
     antenna wall.
 
     :param has_ridge: Whether the wall pair has a ridge or not. Can only be
-    true if all ridge variables are greater than 0. Defaults to None.
+    true if all ridge variables are greater than 0. Initialized as False.
     :type has_ridge: bool, optional
     :param width: The width of the wall pair. Must be > 0 cm and <= 100 cm.
     Defaults to None.
@@ -59,8 +59,27 @@ class WallPair:
                  ridge_height: Optional[float] = None,
                  ridge_width: Optional[float] = None,
                  ridge_thickness: Optional[float] = None) -> None:
-        """Constructor method."""
+        """
+        Constructor for a WallPair object.
 
+        Constructs a WallPair object with no ridge.
+
+        :param width: The width of the wall pair. Must be > 0 cm and <= 100 cm.
+        Defaults to None.
+        :type width: float, optional
+        :param angle: The angle of the wall pair. Must be between 0 and 90
+        degrees (inclusive). Defaults to None.
+        :type angle: float, optional
+        :param ridge_height: The height of the ridge. Must be between 0 cm
+        and 100 cm (inclusive).
+        :type ridge_height: float, optional
+        :param ridge_width: The width of the ridge. Must be between 0 cm and
+        100 cm (inclusive).
+        :type ridge_width: float, optional
+        :param ridge_thickness: The thickness of the ridge. Must be between 0 cm
+        and 100 cm (inclusive).
+        :type ridge_thickness: float, optional
+        """
         self.has_ridge = False
         self.width = width
         self.angle = angle
