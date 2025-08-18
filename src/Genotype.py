@@ -12,7 +12,8 @@ This module provides:
 
 
 class Genotype:
-    """Genotype class.
+    """
+    Genotype class.
 
     A class representing an individual antenna's genotype.
 
