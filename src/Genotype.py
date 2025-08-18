@@ -4,8 +4,7 @@ from typing import Optional
 from src.WallPair import WallPair
 
 
-"""
-Class for constructing an antenna Genotype and acting upon it
+"""Class for constructing an antenna Genotype and acting upon it
 
 This module provides:
 - generate: randomly generates a new Genotype
@@ -24,6 +23,7 @@ class Genotype:
     :param walls: A list of WallPair objects that comprise the walls of the
     antenna.
     :type walls: list, optional
+    :rtype: None
     """
 
     # Logical constraint constants  #TODO set to correct units and values
@@ -43,6 +43,17 @@ class Genotype:
         """
         The constructor for a Genotype object (an individual antenna's
         genotype).
+
+        :param height: The height of the antenna.
+        :type height: float, optional
+        :param waveguide_height: The height of the waveguide.
+        :type waveguide_height: float, optional
+        :param waveguide_length: The length of the waveguide.
+        :type waveguide_length: float, optional
+        :param walls: A list of WallPair objects that comprise the walls of the
+        antenna.
+        :type walls: list, optional
+        :rtype: None
         """
         # Make sure the list of walls provided to the constructor is valid.
         if walls is not None:
@@ -97,6 +108,7 @@ class Genotype:
         :type mut_effect_size: float
         :param rand: Random number generator object.
         :type rand: random.Random
+        :rtype: None
         """
         core_genes = ["height", "waveguide_height", "waveguide_length"]
 
