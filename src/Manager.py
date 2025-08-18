@@ -38,8 +38,8 @@ class Manager:
 
     # TODO method to return best individual in population
 
-def main():
-
+def main() -> None:
+    """Main function."""
     # initialize manager
     manager = Manager()
 
