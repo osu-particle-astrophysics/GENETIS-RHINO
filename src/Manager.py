@@ -57,7 +57,6 @@ class Manager:
         :type generation_num: int
         :rtype: None
         """
-
         new_pop = self.selection_scheme.evolve(self.population)
         self.population = new_pop
 
