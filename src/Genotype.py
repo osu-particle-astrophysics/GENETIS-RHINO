@@ -14,6 +14,8 @@ This module provides:
 class Genotype:
     """A class representing an individual antenna's genotype.
 
+    A class representing an individual antenna's genotype.
+
     :param height: The height of the antenna.
     :type height: float, optional
     :param waveguide_height: The height of the waveguide.
