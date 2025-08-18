@@ -1,4 +1,5 @@
-"""Class for constructing an antenna Genotype and acting upon it.
+"""
+Class for constructing an antenna Genotype and acting upon it.
 
 This module provides:
 - generate: randomly generates a new Genotype
