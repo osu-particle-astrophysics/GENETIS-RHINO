@@ -22,6 +22,7 @@ class Genotype:
     :param walls: A list of WallPair objects that comprise the walls of the
     antenna.
     :type walls: list, optional
+    :return: Nothing
     :rtype: None
     """
 
@@ -52,6 +53,7 @@ class Genotype:
         :param walls: A list of WallPair objects that comprise the walls of the
         antenna.
         :type walls: list, optional
+        :return: Nothing
         :rtype: None
         """
         # Make sure the list of walls provided to the constructor is valid.
