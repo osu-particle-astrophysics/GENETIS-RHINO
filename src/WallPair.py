@@ -54,19 +54,14 @@ class WallPair:
     MIN_RIDGE_THICKNESS = 0.0   # cm; inclusive
     MAX_RIDGE_THICKNESS = 100.0 # cm; inclusive
 
-    def __init__(self, has_ridge: Optional[bool] = None,
-                 width: Optional[float] = None,
+    def __init__(self, width: Optional[float] = None,
                  angle: Optional[float] = None,
                  ridge_height: Optional[float] = None,
                  ridge_width: Optional[float] = None,
                  ridge_thickness: Optional[float] = None) -> None:
         """Constructor method."""
-        # If has_ridge is True, make sure all ridge variables are greater
-        # than 0.
-        if has_ridge and (ridge_height <= 0 or ridge_width <= 0 or ridge_thickness <= 0):
-            raise ValueError("WallPair has_ridge can only be True if all ridge variables are greater than 0.")
 
-        self.has_ridge = has_ridge
+        self.has_ridge = False
         self.width = width
         self.angle = angle
         self.ridge_height = ridge_height
@@ -84,9 +79,6 @@ class WallPair:
         :return: A randomly generated WallPair object with no ridge.
         :rtype: WallPair object
         """
-        # Do not express ridge
-        has_ridge = False
-
         # Generate a random width within the specified constraints
         width = WallPair.MIN_WIDTH
         while width == WallPair.MIN_WIDTH:  # exclude min
@@ -107,7 +99,7 @@ class WallPair:
         ridge_thickness = rand.uniform(WallPair.MIN_RIDGE_THICKNESS,
                                          WallPair.MAX_RIDGE_THICKNESS)
 
-        return WallPair(has_ridge, width, angle, ridge_height, ridge_width,
+        return WallPair(width, angle, ridge_height, ridge_width,
                         ridge_thickness)
 
     def generate_with_ridge(self, rand: random.Random) -> object:
