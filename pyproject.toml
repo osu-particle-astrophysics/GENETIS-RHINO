@@ -40,9 +40,13 @@ ignore = [
     # Imports
     "TID252",
 
-    #Resolves ruff conflicts
+    # Resolves ruff conflicts
     "D203",
     "D212",
+
+    # Unused variables
+    "ARG002",
+    "F841",    
 ]
 
 [tool.ruff.lint.pylint]
