@@ -42,7 +42,8 @@ class Genotype:
                  waveguide_height: Optional[float] = None,
                  waveguide_length: Optional[float] = None,
                  walls: Optional[list] = None) -> None:
-        """Genotype Constructor.
+        """
+        Genotype Constructor.
 
         The constructor for a Genotype object (an individual antenna's
         genotype).
@@ -69,7 +70,8 @@ class Genotype:
         self.walls = walls
 
     def generate(self, num_wall_pairs: int, rand: random.Random):
-        """Generate Genotype.
+        """
+        Generate Genotype.
 
         Makes a Genotype object with randomly generated genes.
 
