@@ -60,7 +60,7 @@ class Manager:
         next_gen_population = []
 
         # TODO MAX select parent Phenotypes to replicate and add their child
-        #  Phenotypes to next_gen_population as they are created
+        # Phenotypes to next_gen_population as they are created
 
         self.population = next_gen_population
 

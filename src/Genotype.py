@@ -119,23 +119,119 @@ class Genotype:
         # Iterate over each gene in the Genotype
         for gene in core_genes:
             # if it's randomly selected to mutate, apply a mutation of
-            # mut_effect_size
+            # mut_effect_size in Guassian distribution
             if per_site_mut_rate >= rand.uniform(0, 1):
+                # height gene
                 if gene == "height":
                     self.height = self.height + rand.gauss(0,mut_effect_size)
-                    # TODO check to make sure it's still within min/max vals
+                    # if under min bound, set to min
+                    if self.height < self.MIN_HEIGHT:
+                        self.height = self.MIN_HEIGHT
+                    # if over max bound, set to max
+                    if self.height > self.MAX_HEIGHT:
+                        self.height = self.MAX_HEIGHT
 
+                # waveguide_height gene
                 elif gene == "waveguide_height":
                     self.waveguide_height = (self.waveguide_height +
                                              rand.gauss(0, mut_effect_size))
-                    # TODO check to make sure it's still within min/max vals
+                    # if under min bound, set to min
+                    if self.waveguide_height < self.MIN_WAVEGUIDE_HEIGHT:
+                        self.waveguide_height = self.MIN_WAVEGUIDE_HEIGHT
+                    # if over max bound, set to max
+                    if self.waveguide_height > self.MAX_WAVEGUIDE_HEIGHT:
+                        self.waveguide_height = self.MAX_WAVEGUIDE_HEIGHT
 
+                # waveguide_length gene
                 elif gene == "waveguide_length":
                     self.waveguide_length = (self.waveguide_length +
                                                 rand.gauss(0, mut_effect_size))
-                    # TODO check to make sure it's still within min/max vals
+                    # if under min bound, set to min
+                    if self.waveguide_length < self.MIN_WAVEGUIDE_LENGTH:
+                        self.waveguide_length = self.MIN_WAVEGUIDE_LENGTH
+                    # if over of max bound, set to max
+                    if self.waveguide_length > self.MAX_WAVEGUIDE_LENGTH:
+                        self.waveguide_length = self.MAX_WAVEGUIDE_LENGTH
 
-        # TODO add WallPair mutating (all)
+        # Mutate WallPair genes
+        wallpair_genes = ["angle", "ridge_height", "ridge_width_top",
+                          "ridge_width_bottom", "ridge_thickness_top",
+                          "ridge_thickness_bottom"]
+        # Iterate over each WallPair object in the walls list
+        for wp in self.walls:
+            # Iterate over each gene in the WallPair
+            for gene in wallpair_genes:
+                # if it's randomly selected to mutate, apply a mutation
+                    # of mut_effect_size in Guassian distribution
+                if per_site_mut_rate >= rand.uniform(0, 1):
+                    # angle gene
+                    if gene == "angle":
+                        wp.angle = wp.angle + rand.gauss(0,mut_effect_size)
+                        # if under min bound, set to min
+                        if wp.angle < wp.MIN_ANGLE:
+                            wp.angle = wp.MIN_ANGLE
+                        # if over max bound, set to max
+                        if wp.angle > wp.MAX_ANGLE:
+                            wp.angle = wp.MAX_ANGLE
+
+                    # ridge_height gene
+                    if gene == "ridge_height":
+                        wp.ridge_height = wp.ridge_height + rand.gauss(0,
+                                                                 mut_effect_size)
+                        # if under min bound, set to min
+                        if wp.ridge_height < wp.MIN_RIDGE_HEIGHT:
+                            wp.ridge_height = wp.MIN_RIDGE_HEIGHT
+                        # if over max bound, set to max
+                        if wp.ridge_height > wp.MAX_RIDGE_HEIGHT:
+                            wp.ridge_height = wp.MAX_RIDGE_HEIGHT
+
+                    # ridge_width_top gene
+                    if gene == "ridge_width_top":
+                        wp.ridge_width_top = (wp.ridge_width_top +
+                                              rand.gauss(0,
+                                                             mut_effect_size))
+                        # if under min bound, set to min
+                        if wp.ridge_width_top < wp.MIN_RIDGE_WIDTH_TOP:
+                            wp.ridge_width_top = wp.MIN_RIDGE_WIDTH_TOP
+                        # if over max bound, set to max
+                        if wp.ridge_width_top > wp.MAX_RIDGE_WIDTH_TOP:
+                            wp.ridge_width_top = wp.MAX_RIDGE_WIDTH_TOP
+
+                    # ridge_width_bottom gene
+                    if gene == "ridge_width_bottom":
+                        wp.ridge_width_bottom = (wp.ridge_width_bottom +
+                                                 rand.gauss(0, mut_effect_size))
+                        # if under min bound, set to min
+                        if wp.ridge_width_bottom < wp.MIN_RIDGE_WIDTH_BOTTOM:
+                            wp.ridge_width_bottom = wp.MIN_RIDGE_WIDTH_BOTTOM
+                        # if over max bound, set to max
+                        if wp.ridge_width_bottom > wp.MAX_RIDGE_WIDTH_BOTTOM:
+                            wp.ridge_width_bottom = wp.MAX_RIDGE_WIDTH_BOTTOM
+
+                    # ridge_thickness_top gene
+                    if gene == "ridge_thickness_top":
+                        wp.ridge_thickness_top = (wp.ridge_thickness_top +
+                                                  rand.gauss(0,
+                                                             mut_effect_size))
+                        # if under min bound, set to min
+                        if wp.ridge_thickness_top < wp.MIN_RIDGE_THICKNESS_TOP:
+                            wp.ridge_thickness_top = wp.MIN_RIDGE_THICKNESS_TOP
+                        # if over max bound, set to max
+                        if wp.ridge_thickness_top > wp.MAX_RIDGE_THICKNESS_TOP:
+                            wp.ridge_thickness_top = wp.MAX_RIDGE_THICKNESS_TOP
+
+                    # ridge_thickness_bottom gene
+                    if gene == "ridge_thickness_bottom":
+                        wp.ridge_thickness_bottom = (
+                                wp.ridge_thickness_bottom + rand.gauss(0,
+                                                                       mut_effect_size))
+                        # if under min bound, set to min
+                        if wp.ridge_width_bottom < wp.MIN_RIDGE_THICKNESS_BOTTOM:
+                            wp.ridge_width_bottom = wp.MIN_RIDGE_THICKNESS_BOTTOM
+                        # if over max bound, set to max
+                        if wp.ridge_width_bottom > wp.MAX_RIDGE_THICKNESS_BOTTOM:
+                            wp.ridge_thickness_bottom = (
+                                wp.MAX_RIDGE_THICKNESS_BOTTOM)
 
     # TODO KATE - func to construct from 2 parents with crossover (not for v1)
 
