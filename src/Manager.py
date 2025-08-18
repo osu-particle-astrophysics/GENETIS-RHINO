@@ -53,9 +53,7 @@ class Manager:
 
         rtype: None
         """
-        var = generation_num # TODO delete this line once using
-        # generation_num it's just to make the delinter happy
-        current_generation = self.population
+        parent_population = self.population
         next_gen_population = []
 
         # TODO MAX select parent Phenotypes to replicate and add their child
