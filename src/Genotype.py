@@ -105,7 +105,8 @@ class Genotype:
 
     def mutate(self, per_site_mut_rate: float, mut_effect_size: float,
                rand: random.Random) -> None:
-        """Mutate Genotype.
+        """
+        Mutate Genotype.
 
         Mutates a genotype.
 
