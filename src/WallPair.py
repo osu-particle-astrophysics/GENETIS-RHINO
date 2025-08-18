@@ -63,7 +63,6 @@ class WallPair:
                  ridge_width_bottom: Optional[float] = None,
                  ridge_thickness_top: Optional[float] = None,
                  ridge_thickness_bottom: Optional[float] = None) -> None:
-                    
         """
         Constructor for a WallPair object.
 
@@ -90,6 +89,7 @@ class WallPair:
         :param ridge_thickness_bottom: The thickness of the ridge at the
         bottom of the . Must be between 0 cm and 100 cm (inclusive).
         :type ridge_thickness_bottom: float, optional
+        :rtype: None
         """
         self.has_ridge = False
         self.angle = angle

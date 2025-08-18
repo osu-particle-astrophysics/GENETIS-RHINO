@@ -21,8 +21,7 @@ class Manager:
 
         self.selection_scheme = "Default" # TODO read in from config
 
-    def generate_random_population(self, pop_size: int, generation_num) -> \
-            None:
+    def generate_random_population(self, pop_size: int, generation_num: int) -> None:
         """
         Generate a random population.
 
@@ -54,6 +53,8 @@ class Manager:
 
         rtype: None
         """
+        var = generation_num # TODO delete this line once using
+        # generation_num it's just to make the delinter happy
         current_generation = self.population
         next_gen_population = []
 

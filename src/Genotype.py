@@ -34,8 +34,8 @@ class Genotype:
 
     MIN_WAVEGUIDE_HEIGHT = 200.0    # cm; inclusive -- func of min freq you
     # care about picking up
-    MAX_WAVEGUIDE_HEIGHT = 1000.0   # cm; inclusive; also not bigger than
-    # aperture (in line check) #TODO
+    MAX_WAVEGUIDE_HEIGHT = 1000.0   # cm; inclusive; # TODO also prevent being
+    # bigger than aperture (in line check somewhere, not here)
 
     MIN_WAVEGUIDE_LENGTH = 100.0    # cm; inclusive
     MAX_WAVEGUIDE_LENGTH = 1000.0   # cm; inclusive
