@@ -1,4 +1,5 @@
-"""Class for constructing a WallPair and acting upon it.
+"""
+Class for constructing a WallPair and acting upon it.
 
 This module provides:
 - generate_without_ridge: randomly generates a WallPair without a ridge.
@@ -59,13 +60,11 @@ class WallPair:
                  ridge_height: Optional[float] = None,
                  ridge_width: Optional[float] = None,
                  ridge_thickness: Optional[float] = None) -> None:
-        """Constructor method"""
+        """Constructor method."""
         # If has_ridge is True, make sure all ridge variables are greater
         # than 0.
-        if has_ridge:
-            if ridge_height <= 0 or ridge_width <= 0 or ridge_thickness <= 0:
-                 raise ValueError("WallPair has_ridge can only be True if "
-                                  "all ridge variables are greater than 0.")
+        if has_ridge and (ridge_height <= 0 or ridge_width <= 0 or ridge_thickness <= 0):
+            raise ValueError("WallPair has_ridge can only be True if all ridge variables are greater than 0.")
 
         self.has_ridge = has_ridge
         self.width = width
@@ -158,10 +157,10 @@ class WallPair:
 
         # Generate random wall pairs and add them to a list
         walls = []
-        for wall in range(num_wall_pairs):
+        for _ in range(num_wall_pairs):
             # Randomly select type of wall pair to generate (ridge or no ridge)
-            if random.randint(0,1) == 0:  #FIXME do we actually want these
-                # to be equal odds?
+            if random.randint(0,1) == 0:  #TODO do we actually want these to
+                # be equal odds?
                 walls.append(WallPair().generate_without_ridge(rand))
             else:
                 walls.append(WallPair().generate_with_ridge(rand))
