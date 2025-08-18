@@ -1,7 +1,7 @@
 """Abstract selector class defines the interface for all selection algorithms."""
 
-from abc import ABC, abstractmethod
 import random
+from abc import ABC, abstractmethod
 
 from Phenotype import Phenotype
 
@@ -10,15 +10,15 @@ class AbstractSelector(ABC):
     """Each selector chooses one parent from a selection pool."""
 
     @abstractmethod
-    def select_one(self, selection_pool: list[Phenotype]) -> Phenotype: ...
+    def select_one(self, selection_pool: list[Phenotype]) -> Phenotype:
+        """Given a list of Phenotype objects, select on to be a parent."""
+
 
 class NSGATournament(AbstractSelector):
-    """
-    Implements binary tournament selection.
-
-    """
+    """Implements binary tournament selection."""
 
     def select_one(self, selection_pool: list[Phenotype]) -> Phenotype:
+        """Choose between two random individuals based on rank, then crowding distance."""
         i1, i2 = random.sample(selection_pool, 2)
 
         # Compare rank

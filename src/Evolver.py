@@ -1,16 +1,32 @@
+"""Abstract Evolver class defines the interface for all evolvers (e.g. NSGA-II, Lexicase, etc.)."""
+
 from abc import ABC, abstractmethod
-from src.Selectors import NSGATournament
+
 from src.Phenotype import Phenotype
+from src.Selectors import NSGATournament
+
 
 class AbstractEvolver(ABC):
+    """Evolvers perform everything needed to select and manage populations of individuals."""
 
     @abstractmethod
-    def evolve(self, population):
-        pass
+    def evolve(self, population: list[Phenotype]) -> list[Phenotype]:
+        """Take in a population and return a new population that has undergone selection and mutation."""
 
 
 class NSGA2(AbstractEvolver):
-    def evolve(self, population: list) -> list:
+    """Implemented evolver for the Non-dominated Sorting Genetic Algorithm."""
+
+    def evolve(self, population: list[Phenotype]) -> list[Phenotype]:
+        """
+        Do one generation of NSGA-II.
+
+        Steps:
+        1. Assign ranks and distances to all individuals.
+        2. Generate offspring equal to the size of the pop using binary tournament.
+        3. Merge the offspring and old population.
+        4. Truncate the lower half (according to rank and crowding distance).
+        """
         pop_size = len(population)
 
         # Assign ranks and distances
@@ -20,7 +36,7 @@ class NSGA2(AbstractEvolver):
 
         # Generate offspring
         offspring = []
-        for i in range(pop_size):
+        for _ in range(pop_size):
             parent1 = NSGATournament.select_one(population)
             parent2 = NSGATournament.select_one(population)
             child = parent1.make_offspring(parent2)
@@ -44,33 +60,30 @@ class NSGA2(AbstractEvolver):
 
         return (new_pop)
 
-### Helper functions for NSGAII  
+### Helper functions for NSGAII
 def fast_non_dominated_sort(population: list) -> None:
-    """
-    Assigns NSGA-II Pareto rank to each individual in the population.
-    Lower rank = better front.
-    """
+    """Assigns NSGA-II Pareto rank to each individual in the population. Lower rank = better front."""
     fronts: list[list] = [[]]
-    
+
     # For every individual get who it dominates, and how many it is dominated by
     for indiv in population:
-        indiv.dominated_set = []     
-        indiv.domination_count = 0 
-        
+        indiv.dominated_set = []
+        indiv.domination_count = 0
+
         for q in population:
             if indiv is q:
                 continue
-            
+
             if dominates(indiv, q):
                 indiv.dominated_set.append(q)
-            elif dominates(q, p):
+            elif dominates(q, indiv):
                 indiv.domination_count += 1
-        
+
         # If you're not dominated by anyone, you go in the first front
         if indiv.domination_count == 0:
             indiv.nsgaii_rank = 0
             fronts[0].append(indiv)
-    
+
     i = 0
     while fronts[i]:
         next_front = []
@@ -96,21 +109,18 @@ def dominates(p: Phenotype, q: Phenotype) -> bool:
 
     """
     return any(p.fitness[obj] < q.fitness[obj] for obj in p.fitness)
-    
-def crowding_distance_assignment(front: list):
+
+def crowding_distance_assignment(front: list) -> None:
     """
-    Assigns NSGA-II crowding distance to individuals in a front.
-    Larger distance = more diversity.
+    Assigns NSGA-II crowding distance to individuals in a front. Larger distance = more diversity.
 
-    Args:
-    front: A collection of individuals on the same front
-
-    """    
+    Args: front: A collection of individuals on the same front
+    """
     for indiv in front:
         indiv.nsgaii_distance = 0.0
 
     # For every objective
-    for obj in front[0].fitness.keys():
+    for obj in front[0].fitness:
         # Sort the front for this objective
         front.sort(key=lambda indiv: indiv.fitness[obj])
         # Get the max and min for normalization
@@ -126,5 +136,5 @@ def crowding_distance_assignment(front: list):
             # Get the two closest points
             prev_f = front[i - 1].fitness[obj]
             next_f = front[i + 1].fitness[obj]
-            # Assign normalized crowding distance 
+            # Assign normalized crowding distance
             front[i].nsgaii_distance += (next_f - prev_f) / (f_max - f_min)
