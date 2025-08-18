@@ -3,7 +3,6 @@ from typing import Optional
 
 from src.WallPair import WallPair
 
-
 """Class for constructing an antenna Genotype and acting upon it
 
 This module provides:
