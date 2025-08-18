@@ -12,7 +12,7 @@ class Manager:
         """Constructor."""
         self.seed = 1  #TODO read in from config
         # coded
-        self.rand = random.seed(self.seed)
+        self.rand = random.Random(self.seed)
 
         self.population = []
 
@@ -21,7 +21,8 @@ class Manager:
 
         self.selection_scheme = "Default" # TODO read in from config
 
-    def generate_random_population(self, pop_size: int) -> None:
+    def generate_random_population(self, pop_size: int, generation_num) -> \
+            None:
         """
         Generate a random population.
 
@@ -37,14 +38,14 @@ class Manager:
             g = Genotype().generate(2, self.rand)
 
             # assign phenotype to genotype
-            p = Phenotype(g, str(individual), "None", 0)
+            p = Phenotype(g, str(individual), "None", generation_num)
 
             # append phenotype to population
             self.population.append(p)
 
     # TODO method to return best individual in population
 
-    def evolve_one_gen(self) -> None:
+    def evolve_one_gen(self, generation_num: int) -> None:
         """
         Evolve population for one generation.
 
@@ -53,21 +54,28 @@ class Manager:
 
         rtype: None
         """
-        # TODO MAX impliment me!
+        current_generation = self.population
+        next_gen_population = []
+
+        # TODO MAX select parent Phenotypes to replicate and add their child
+        #  Phenotypes to next_gen_population as they are created
+
+        self.population = next_gen_population
 
 
 def main() -> None:
     """Main function."""
     pop_size = 10 #TODO read in from config
-    num_gen = 10  #TODO read in from config
+    num_generations = 10  #TODO read in from config
 
     # 0. Initialize manager
     manager = Manager()
 
     # 1. Randomly generates starting population
-    manager.generate_random_population(pop_size)
+    manager.generate_random_population(pop_size, 0)
 
-    for generation in range(num_gen):
+    for generation_num in range(1, num_generations):
+        print(generation_num)
         # 2. Runs evaluation on population
              # GROUP 2
 
@@ -77,7 +85,8 @@ def main() -> None:
         # 4. Selects individuals to replicate to the next generation, does evo
         # work on them (mutation, crossover, etc.) and updates population to the
         # next generation.
-        manager.evolve_one_gen()
+        manager.evolve_one_gen(generation_num) # need to feed it generation
+        # because gen created is a variable you need to make a child Phenotype
 
 
 if __name__ == "__main__":

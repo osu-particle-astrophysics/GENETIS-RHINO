@@ -1,7 +1,7 @@
 """Class for constructing an antenna's Phenotype and acting upon it."""
 import copy
-from typing import Optional
 import random
+from typing import Optional
 
 
 class Phenotype:
@@ -62,7 +62,6 @@ class Phenotype:
         :type rand: random.Random
         :rtype: None
         """
-
         # make a copy of parent 1 to be the offspring
         offspring = copy.deepcopy(self)
 
