@@ -1,11 +1,11 @@
 import random
-import sys
 
 from src.WallPair import WallPair
 
 
 class Genotype:
-    """A class representing an individual antenna's genotype.
+    """
+    A class representing an individual antenna's genotype.
 
     :param height: The height of the antenna.
     :type height: float, optional
@@ -17,6 +17,7 @@ class Genotype:
     antenna.
     :type walls: list, optional
     """
+
     # Logical constraint constants  #FIXME set to correct units and values
     MIN_HEIGHT = 0.0              # cm; exclusive
     MAX_HEIGHT = 100.0            # cm; inclusive
@@ -31,7 +32,9 @@ class Genotype:
                  waveguide_height: float = None,
                  waveguide_length: float = None,
                  walls: list = None):
-        """The constructor for a Genotype object (an individual antenna's genotype).
+        """
+        The constructor for a Genotype object (an individual antenna's
+        genotype).
         """
         # Make sure the list of walls provided to the constructor is valid.
         if walls is not None:
@@ -44,7 +47,8 @@ class Genotype:
         self.walls = walls
 
     def generate(self, num_wall_pairs: int, rand: random.Random):
-        """Makes a Genotype object with randomly generated genes.
+        """
+        Makes a Genotype object with randomly generated genes.
 
         :param num_wall_pairs: number of WallPair objects
         :param num_wall_pairs: int
@@ -76,7 +80,8 @@ class Genotype:
         return Genotype(height, waveguide_height, waveguide_length, walls)
 
     def mutate(self, per_site_mut_rate: float, mut_effect_size: float, rand: random.Random):
-        """Mutates a genotype.
+        """
+        Mutates a genotype.
 
         :param per_site_mut_rate: The % chance any given variable in the Genotype will be mutated.
         :type per_site_mut_rate: float
