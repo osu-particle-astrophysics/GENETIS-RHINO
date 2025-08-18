@@ -40,7 +40,7 @@ class Manager:
 
 def main() -> None:
     """Main function."""
-    # initialize manager
+    # 0. Initialize manager
     manager = Manager()
 
     # 1. Randomly generates starting population
