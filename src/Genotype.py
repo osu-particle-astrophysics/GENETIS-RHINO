@@ -17,7 +17,7 @@ class Genotype:
 
     A class representing an individual antenna's genotype.
 
-    :param height: The height of the antenna.
+    :param height: The height of the antenna in lambda.
     :type height: float, optional
     :param waveguide_height: The height of the waveguide.
     :type waveguide_height: float, optional
@@ -28,15 +28,17 @@ class Genotype:
     :type walls: list, optional
     """
 
-    # Logical constraint constants  #TODO set to correct units and values
-    MIN_HEIGHT = 0.0              # cm; exclusive
-    MAX_HEIGHT = 100.0            # cm; inclusive
+    # Logical constraint constants
+    MIN_HEIGHT = 2.0                # lambda; inclusive
+    MAX_HEIGHT = 5.0                # lambda; inclusive
 
-    MIN_WAVEGUIDE_HEIGHT = 0.0    # cm; exclusive
-    MAX_WAVEGUIDE_HEIGHT = 100.0  # cm; inclusive
+    MIN_WAVEGUIDE_HEIGHT = 200.0    # cm; inclusive -- func of min freq you
+    # care about picking up
+    MAX_WAVEGUIDE_HEIGHT = 1000.0   # cm; inclusive; also not bigger than
+    # aperture (in line check) #TODO
 
-    MIN_WAVEGUIDE_LENGTH = 0.0    # cm; exclusive
-    MAX_WAVEGUIDE_LENGTH = 100.0  # cm; inclusive
+    MIN_WAVEGUIDE_LENGTH = 100.0    # cm; inclusive
+    MAX_WAVEGUIDE_LENGTH = 1000.0   # cm; inclusive
 
     def __init__(self, height: Optional[float] = None,
                  waveguide_height: Optional[float] = None,
@@ -82,20 +84,14 @@ class Genotype:
         :rtype: Genotype
         """
         # generate valid random height
-        height = Genotype.MIN_HEIGHT
-        while height == Genotype.MIN_HEIGHT: # exclude min
-            height = rand.uniform(Genotype.MIN_HEIGHT, Genotype.MAX_HEIGHT)
+        height = rand.uniform(Genotype.MIN_HEIGHT, Genotype.MAX_HEIGHT)
 
         # generate valid random waveguide_height
-        waveguide_height = Genotype.MIN_WAVEGUIDE_HEIGHT
-        while waveguide_height == Genotype.MIN_WAVEGUIDE_HEIGHT: # exclude min
-            waveguide_height = rand.uniform(Genotype.MIN_WAVEGUIDE_HEIGHT,
+        waveguide_height = rand.uniform(Genotype.MIN_WAVEGUIDE_HEIGHT,
                                          Genotype.MAX_WAVEGUIDE_HEIGHT)
 
         # generate valid random waveguide_length
-        waveguide_length = Genotype.MIN_WAVEGUIDE_LENGTH
-        while waveguide_length == Genotype.MIN_WAVEGUIDE_LENGTH: # exclude min
-            waveguide_length = rand.uniform(Genotype.MIN_WAVEGUIDE_LENGTH,
+        waveguide_length = rand.uniform(Genotype.MIN_WAVEGUIDE_LENGTH,
                                          Genotype.MAX_WAVEGUIDE_LENGTH)
 
         # generate list of walls with randomly generated values
@@ -127,17 +123,19 @@ class Genotype:
             if per_site_mut_rate >= rand.uniform(0, 1):
                 if gene == "height":
                     self.height = self.height + rand.gauss(0,mut_effect_size)
+                    # TODO check to make sure it's still within min/max vals
 
                 elif gene == "waveguide_height":
                     self.waveguide_height = (self.waveguide_height +
                                              rand.gauss(0, mut_effect_size))
+                    # TODO check to make sure it's still within min/max vals
 
                 elif gene == "waveguide_length":
                     self.waveguide_length = (self.waveguide_length +
                                                 rand.gauss(0, mut_effect_size))
-        # TODO add WallPair mutating
+                    # TODO check to make sure it's still within min/max vals
 
-    # TODO KATE - func to construct one from 1 parent
+        # TODO add WallPair mutating (all)
 
     # TODO KATE - func to construct from 2 parents with crossover (not for v1)
 

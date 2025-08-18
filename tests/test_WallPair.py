@@ -14,14 +14,15 @@ class WallPairTest(unittest.TestCase):
     def test_constructor(self):
         """Tests the WallPair constructor when building a valid WallPair object.
         """
-        wp = WallPair(1.0, 2.0, 3.0,4.0,5.0)
+        wp = WallPair(1.0, 2.0, 3.0,4.0,5.0, 6.0)
 
         self.assertEqual(wp.has_ridge, False)
-        self.assertEqual(wp.width, 1)
-        self.assertEqual(wp.angle, 2)
-        self.assertEqual(wp.ridge_height, 3)
-        self.assertEqual(wp.ridge_width, 4)
-        self.assertEqual(wp.ridge_thickness, 5)
+        self.assertEqual(wp.angle, 1)
+        self.assertEqual(wp.ridge_height, 2)
+        self.assertEqual(wp.ridge_width_top, 3)
+        self.assertEqual(wp.ridge_width_bottom, 4)
+        self.assertEqual(wp.ridge_thickness_top, 5)
+        self.assertEqual(wp.ridge_thickness_bottom, 6)
 
     def test_generate_without_ridge(self):
         """Tests the generate_without_ridge method which randomly generates a
@@ -31,13 +32,12 @@ class WallPairTest(unittest.TestCase):
         wp = WallPair().generate_without_ridge(rand)
 
         self.assertEqual(wp.has_ridge, False)
-        self.assertEqual(wp.width, 13.436424411240122)
-        self.assertEqual(wp.angle, 84.74337369372327)
-        self.assertEqual(wp.ridge_height, 76.3774618976614)
-        self.assertEqual(wp.ridge_width, 25.50690257394217)
-        self.assertEqual(wp.ridge_thickness, 49.54350870919409)
-
-
+        self.assertEqual(wp.angle, 12.09278197011611)
+        self.assertEqual(wp.ridge_height, 84.74337369372327)
+        self.assertEqual(wp.ridge_width_top, 76.3774618976614)
+        self.assertEqual(wp.ridge_width_bottom, 25.50690257394217)
+        self.assertEqual(wp.ridge_thickness_top, 49.54350870919409)
+        self.assertEqual(wp.ridge_thickness_bottom, 44.949106478873816)
 
     def test_generate_with_ridge(self):
         """Tests the generate_with_ridge method which randomly generates a
@@ -47,11 +47,12 @@ class WallPairTest(unittest.TestCase):
         wp = WallPair().generate_with_ridge(rand)
 
         self.assertEqual(wp.has_ridge, True)
-        self.assertEqual(wp.width, 13.436424411240122)
-        self.assertEqual(wp.angle, 84.74337369372327)
-        self.assertEqual(wp.ridge_height, 76.3774618976614)
-        self.assertEqual(wp.ridge_width, 25.50690257394217)
-        self.assertEqual(wp.ridge_thickness, 49.54350870919409)
+        self.assertEqual(wp.angle, 12.09278197011611)
+        self.assertEqual(wp.ridge_height, 84.74337369372327)
+        self.assertEqual(wp.ridge_width_top, 76.3774618976614)
+        self.assertEqual(wp.ridge_width_bottom, 25.50690257394217)
+        self.assertEqual(wp.ridge_thickness_top, 49.54350870919409)
+        self.assertEqual(wp.ridge_thickness_bottom, 44.949106478873816)
 
     def test_generate_list(self):
         """Tests the generate_list method for generating a list of
