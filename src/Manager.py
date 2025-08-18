@@ -51,7 +51,10 @@ class Manager:
         Takes the Manager's population and evolves it for one generation.
         Set's Manager's population to the new generation's population.
 
-        rtype: None
+        :param generation_num: The generation number of the new generation
+        being created.
+        :type generation_num: int
+        :rtype: None
         """
         parent_population = self.population
         next_gen_population = []
