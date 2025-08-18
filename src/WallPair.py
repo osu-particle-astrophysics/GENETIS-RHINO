@@ -1,5 +1,5 @@
 """
-Class for constructing a WallPair and acting upon it.
+Helper class for constructing a WallPair and acting upon it.
 
 This module provides:
 - generate_without_ridge: randomly generates a WallPair without a ridge.
