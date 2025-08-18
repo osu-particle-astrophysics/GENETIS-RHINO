@@ -1,9 +1,5 @@
-"""
-Class for constructing an antenna's Phenotype and acting upon it.
-"""
+"""Class for constructing an antenna's Phenotype and acting upon it."""
 from typing import Optional
-
-from src.Genotype import Genotype
 
 
 class Phenotype:
@@ -15,9 +11,9 @@ class Phenotype:
 
     :param genotype: a Genotype instance.
     :type genotype: Genotype
-    :param id: The antenna's unique ID.
-    :type id: str, optional
-    :param parent_id: The individual antenna's parent's unique ID.
+    :param indv_id: The individual's unique ID.
+    :type indv_id: str, optional
+    :param parent_id: The individual's parent's unique ID.
     :type parent_id: str, optional
     :param generation_created: Which generation the individual was created.
     :type generation_created: int, optional
@@ -26,7 +22,7 @@ class Phenotype:
     """
 
     def __init__(self, genotype: object,
-                 id: Optional[str],
+                 indv_id: Optional[str],
                  parent_id: Optional[str],
                  generation_created: Optional[int],
                  fitness_score: Optional[float]) -> None:
@@ -37,9 +33,9 @@ class Phenotype:
 
         :param genotype: a Genotype instance.
         :type genotype: Genotype
-        :param id: The antenna's unique ID.
-        :type id: str, optional
-        :param parent_id: The individual antenna's parent's unique ID.
+        :param indv_id: The individual's unique ID.
+        :type indv_id: str, optional
+        :param parent_id: The individual's parent's unique ID.
         :type parent_id: str, optional
         :param generation_created: Which generation the individual was created.
         :type generation_created: int, optional
@@ -48,7 +44,7 @@ class Phenotype:
         :rtype: None
         """
         self.genotype = genotype
-        self.id = id
+        self.indv_id = indv_id
         self.parent_id = parent_id
         self.generation_created = generation_created
         self.fitness_score = fitness_score
