@@ -18,12 +18,10 @@ known_parameters = {
 }
 
 class ParametersObject:
-    """
-    This class serves as the interface for all parameters. Use
-    ParametersObject.param_name to access a stored value.
-    """
+    """This class serves as the interface for all parameters. Use ParametersObject.param_name to access a stored value."""
 
     def __init__(self, path_to_config: str) -> None:
+        """Create a config object from a file."""
         with open(path_to_config, "rb") as f:
             self._parameters = load(f)
 
@@ -45,6 +43,7 @@ class ParametersObject:
 
 
     def __getattr__(self, name: str) -> str:
+        """Get a requested attribute."""
         _params = object.__getattribute__(self, "_parameters")
         if name not in _params:
             raise AttributeError(f"{name} is not a defined parameter!")

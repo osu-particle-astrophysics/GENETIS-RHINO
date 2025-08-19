@@ -44,7 +44,7 @@ class Genotype:
                  height: Optional[float] = None,
                  waveguide_height: Optional[float] = None,
                  waveguide_length: Optional[float] = None,
-                 walls: Optional[list] = None,) -> None:
+                 walls: Optional[list] = None) -> None:
         """
         Genotype Constructor.
 

@@ -19,7 +19,7 @@ class Manager:
         self.population = []
 
         selection_scheme_convert_dict = {
-            "NSGAII": NSGA2
+            "NSGAII": NSGA2,
         }
 
         if cfg.selection_scheme not in selection_scheme_convert_dict:
@@ -72,7 +72,6 @@ class Manager:
 
 def main() -> None:
     """Main function."""
-
     # 0. Initialize manager
     manager = Manager()
     cfg = ParametersObject("config.toml")
