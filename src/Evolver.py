@@ -10,14 +10,14 @@ class AbstractEvolver(ABC):
     """Evolvers perform everything needed to select and manage populations of individuals."""
 
     @abstractmethod
-    def evolve(self, population: list[Phenotype]) -> list[Phenotype]:
+    def evolve(self, population: list[Phenotype], generation_num: int) -> list[Phenotype]:
         """Take in a population and return a new population that has undergone selection and mutation."""
 
 
 class NSGA2(AbstractEvolver):
     """Implemented evolver for the Non-dominated Sorting Genetic Algorithm."""
 
-    def evolve(self, population: list[Phenotype]) -> list[Phenotype]:
+    def evolve(self, population: list[Phenotype], generation_num: int) -> list[Phenotype]:
         """
         Do one generation of NSGA-II.
 
@@ -36,10 +36,13 @@ class NSGA2(AbstractEvolver):
 
         # Generate offspring
         offspring = []
-        for _ in range(pop_size):
+        for i in range(pop_size):
             parent1 = NSGATournament.select_one(population)
-            parent2 = NSGATournament.select_one(population)
-            child = parent1.make_offspring(parent2)
+            # uncomment these lines for crossover
+            #parent2 = NSGATournament.select_one(population)
+            new_child_id = generation_num*pop_size + i
+            #child = parent1.make_offspring(new_child_id, parent2)
+            child = parent1.make_offspring(new_child_id)
 
             offspring.append(child)
 
