@@ -21,13 +21,17 @@ class Analysis:
         self.update_fitness()
         self.update_best_individual()
 
-    def update_best_individual(self) -> None:
+    def update_best_individual(self) -> list[Phenotype]:
         """Read the nsgaii rank from each individual and find the individuals on the pareto front (lowest rank)."""
         min_rank = min(indv.nsgaii_rank for indv in self.population)
         best_indvs = [indv for indv in self.population if indv.nsgaii_rank==min_rank]
         self.to_csv_best_individual(best_indvs)
+        return best_indvs
 
-    def to_csv_best_individual(self, best_indvs: list[Phenotype], csv_path: str="best_individuals.csv") -> None:
+    def to_csv_best_individual(self, 
+                               best_indvs: list[Phenotype], 
+                               csv_path: str="best_individuals.csv"
+    ) -> None:
         """Write the attributes of the best phenotypes to a CSV file."""
 
         def make_row(indv: Phenotype) -> pd.DataFrame:
@@ -58,16 +62,17 @@ class Analysis:
             # On the first phenotype of the population, initiate the all_score dictionary.
             else:
                 all_scores = {metric: [score] for metric, score in scores.items()}
-        self.to_csv_fitness(all_scores)
-
-    def to_csv_fitness(self, all_scores: dict, csv_path: str="fitness.csv") -> pd.DataFrame:
-        """Write generation fitness statistics to a CSV file."""
+        # Create the fitness statistics log.
         fitness = {"Generation": self.generation_counter}
         for metric, scores in all_scores.items():
             fitness[metric+"_Average"] = [sum(scores) / len(scores)]
             fitness[metric+"_Maximum"] = [max(scores)]
+        self.to_csv_fitness(fitness)
+        return fitness
+
+    def to_csv_fitness(self, fitness: dict, csv_path: str="fitness.csv") -> pd.DataFrame:
+        """Write generation fitness statistics to a CSV file."""
         # Format data for CSV using pandas.
         fitness_row = pd.DataFrame(fitness)
         fitness_row.to_csv(csv_path, mode="a", header=not Path(csv_path).exists(), index=False)
         return fitness_row
-
