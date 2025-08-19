@@ -1,3 +1,5 @@
+"""The parameters class store any config information we want to be able to easily modify via a toml file."""
+
 try:
     from tomllib import load
 except ModuleNotFoundError:

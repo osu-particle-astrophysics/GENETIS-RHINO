@@ -24,7 +24,7 @@ class Manager:
 
         if cfg.selection_scheme not in selection_scheme_convert_dict:
             raise ValueError("Invalid selection scheme")
-        
+
         self.selection_scheme = selection_scheme_convert_dict[cfg.selection_scheme]()
 
     def initialize_population(self, cfg: ParametersObject) -> None:
