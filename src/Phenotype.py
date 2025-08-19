@@ -1,7 +1,7 @@
 """Class for constructing an antenna's Phenotype and acting upon it."""
 import copy
 import random
-from typing import Optional
+from typing import Optional, Self
 
 
 class Phenotype:
@@ -48,7 +48,7 @@ class Phenotype:
         self.generation_created = generation_created
         self.fitness_score = None # TODO replace with calc_fitness_score call
 
-    def make_offspring(self, per_site_mut_rate: float, mut_effect_size: float, rand: random.Random) -> object:
+    def make_offspring(self, new_id: int, per_site_mut_rate: float, mut_effect_size: float, rand: random.Random) -> object:
         """
         Make offspring.
 
@@ -64,6 +64,9 @@ class Phenotype:
         """
         # make a copy of parent 1 to be the offspring
         offspring = copy.deepcopy(self)
+        # set fields for new_indiv
+        offspring.parent_id = self.indv_id
+        offspring.indv_id = new_id
 
         # mutate offspring
         offspring.genotype.mutate(per_site_mut_rate, mut_effect_size, rand)
