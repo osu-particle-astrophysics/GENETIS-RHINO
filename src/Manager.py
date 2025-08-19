@@ -57,7 +57,7 @@ class Manager:
         :type indv_id: str
         :rtype: None
         """
-        next_gen_pop = self.selection_scheme.evolve(self.population)
+        next_gen_pop = self.selection_scheme.evolve(self.population, generation_num)
         self.population = next_gen_pop
 
     # TODO method to return best individual in population
