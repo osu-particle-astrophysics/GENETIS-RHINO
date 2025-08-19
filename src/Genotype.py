@@ -195,9 +195,11 @@ class Genotype:
                         wp.ridge_height = wp.ridge_height + rand.gauss(0,
                                                                  mut_effect_size)
                         # if under min bound, set to min
-                        wp.ridge_height = max(wp.ridge_height, wp.MIN_HEIGHT)
+                        wp.ridge_height = max(wp.ridge_height,
+                                              wp.MIN_RIDGE_HEIGHT)
                         # if over max bound, set to max
-                        wp.ridge_height = min(wp.ridge_height, wp.MAX_HEIGHT)
+                        wp.ridge_height = min(wp.ridge_height,
+                                              wp.MAX_RIDGE_HEIGHT)
 
                     # ridge_width_top gene
                     if gene == "ridge_width_top":
