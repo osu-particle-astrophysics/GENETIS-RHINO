@@ -10,16 +10,16 @@ class AbstractSelector(ABC):
     """Each selector chooses one parent from a selection pool."""
 
     @abstractmethod
-    def select_one(self, selection_pool: list[Phenotype]) -> Phenotype:
+    def select_one(self, selection_pool: list[Phenotype], rand: random.Random) -> Phenotype:
         """Given a list of Phenotype objects, select on to be a parent."""
 
 
 class NSGATournament(AbstractSelector):
     """Implements binary tournament selection."""
 
-    def select_one(self, selection_pool: list[Phenotype]) -> Phenotype:
+    def select_one(self, selection_pool: list[Phenotype], rand: random.Random) -> Phenotype:
         """Choose between two random individuals based on rank, then crowding distance."""
-        i1, i2 = random.sample(selection_pool, 2)
+        i1, i2 = rand.sample(selection_pool, 2)
 
         # Compare rank
         if i1.nsgaii_rank < i2.nsgaii_rank:
@@ -34,4 +34,4 @@ class NSGATournament(AbstractSelector):
             return i2
 
         # Randomly break ties
-        return random.choice([i1, i2])
+        return rand.choice([i1, i2])

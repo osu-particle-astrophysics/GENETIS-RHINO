@@ -8,6 +8,7 @@ This module provides:
 import random
 from typing import Optional
 
+from src.Parameters import ParametersObject
 from src.WallPair import WallPair
 
 
@@ -30,9 +31,6 @@ class Genotype:
 
     # TODO constants should all be read in fron config instead of hardcoded
     #  here
-    # Logical constraint constants
-    MIN_HEIGHT = 2.0                # lambda; inclusive
-    MAX_HEIGHT = 5.0                # lambda; inclusive
 
     MIN_WAVEGUIDE_HEIGHT = 200.0    # cm; inclusive -- func of min freq you
     # care about picking up
@@ -42,10 +40,11 @@ class Genotype:
     MIN_WAVEGUIDE_LENGTH = 100.0    # cm; inclusive
     MAX_WAVEGUIDE_LENGTH = 1000.0   # cm; inclusive
 
-    def __init__(self, height: Optional[float] = None,
+    def __init__(self, cfg: ParametersObject,
+                 height: Optional[float] = None,
                  waveguide_height: Optional[float] = None,
                  waveguide_length: Optional[float] = None,
-                 walls: Optional[list] = None) -> None:
+                 walls: Optional[list] = None,) -> None:
         """
         Genotype Constructor.
 
@@ -63,6 +62,21 @@ class Genotype:
         :type walls: list, optional
         :rtype: None
         """
+        self.cfg = cfg
+
+        # Logical constraint constants
+        self.MAX_HEIGHT = cfg.MAX_HEIGHT
+        self.MIN_HEIGHT = cfg.MIN_HEIGHT
+
+        # cm; inclusive
+        self.MIN_WAVEGUIDE_LENGTH = cfg.MIN_WAVEGUIDE_LENGTH
+        self.MAX_WAVEGUIDE_LENGTH = cfg.MAX_WAVEGUIDE_LENGTH
+
+        self.MIN_WAVEGUIDE_HEIGHT = cfg.MIN_WAVEGUIDE_HEIGHT # cm; inclusive -- func of min freq you
+    # care about picking up
+        self.MAX_WAVEGUIDE_HEIGHT = cfg.MAX_WAVEGUIDE_HEIGHT # cm; inclusive; # TODO also prevent being
+    # bigger than aperture (in line check somewhere, not here)
+
         # Make sure the list of walls provided to the constructor is valid.
         if walls is not None and not all(isinstance(wall_pair, WallPair) for wall_pair in walls):
             raise ValueError("walls must be a list of WallPair objects.")
@@ -86,36 +100,34 @@ class Genotype:
         :rtype: Genotype
         """
         # generate valid random height
-        height = rand.uniform(Genotype.MIN_HEIGHT, Genotype.MAX_HEIGHT)
+        height = rand.uniform(self.MIN_HEIGHT, self.MAX_HEIGHT)
 
         # generate valid random waveguide_height
-        waveguide_height = rand.uniform(Genotype.MIN_WAVEGUIDE_HEIGHT,
-                                         Genotype.MAX_WAVEGUIDE_HEIGHT)
+        waveguide_height = rand.uniform(self.MIN_WAVEGUIDE_HEIGHT,
+                                         self.MAX_WAVEGUIDE_HEIGHT)
 
         # generate valid random waveguide_length
-        waveguide_length = rand.uniform(Genotype.MIN_WAVEGUIDE_LENGTH,
-                                         Genotype.MAX_WAVEGUIDE_LENGTH)
+        waveguide_length = rand.uniform(self.MIN_WAVEGUIDE_LENGTH,
+                                         self.MAX_WAVEGUIDE_LENGTH)
 
         # generate list of walls with randomly generated values
         walls = WallPair().generate_list(num_wall_pairs, rand)
 
-        return Genotype(height, waveguide_height, waveguide_length, walls)
+        return Genotype(self.cfg, height, waveguide_height, waveguide_length, walls)
 
-    def mutate(self, per_site_mut_rate: float, mut_effect_size: float,
-               rand: random.Random) -> None:
+    def mutate(self, rand: random.Random) -> None:
         """
         Mutate Genotype.
 
         Mutates a genotype.
 
-        :param per_site_mut_rate: The % chance any given variable in the Genotype will be mutated.
-        :type per_site_mut_rate: float
-        :param mut_effect_size: The mutation amplitude when a mutation takes place.
-        :type mut_effect_size: float
         :param rand: Random number generator object.
         :type rand: random.Random
         :rtype: None
         """
+        per_site_mut_rate = self.cfg.per_site_mut_rate
+        mut_effect_size = self.cfg.mut_effect_size
+
         core_genes = ["height", "waveguide_height", "waveguide_length"]
 
         # Iterate over each gene in the Genotype

@@ -2,9 +2,11 @@ import random
 import unittest
 
 from src.Genotype import Genotype
+from src.Parameters import ParametersObject
 from src.Phenotype import Phenotype
 from src.WallPair import WallPair
 
+cfg = ParametersObject("src/config.toml")
 
 class PhenotypeTest(unittest.TestCase):
     """
@@ -15,7 +17,7 @@ class PhenotypeTest(unittest.TestCase):
         """
         Tests the Phenotype constructor with valid inputs.
         """
-        g = Genotype().generate(2, random.Random(1))
+        g = Genotype(cfg).generate(2, random.Random(1))
 
         # Build a valid Phenotype object.
         p = Phenotype(g, "Kate", "None", 0)

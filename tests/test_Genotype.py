@@ -2,6 +2,7 @@ import unittest
 import random
 
 from src.Genotype import Genotype
+from src.Parameters import ParametersObject
 from src.WallPair import WallPair
 
 
@@ -12,6 +13,8 @@ class GenotypeTest(unittest.TestCase):
     PER_SITE_MUT_RATE = 0.3  # per site mutation rate
     MUT_AMPLITUDE = 0.1      # mutation amplitude
 
+    cfg = ParametersObject("src/config.toml")
+
     def test_constructor(self):
         """Tests the Genotype constructor with valid inputs."""
         # Make a list of 2 WallPair objects
@@ -19,7 +22,7 @@ class GenotypeTest(unittest.TestCase):
         walls = WallPair().generate_list(2, rand)
 
         # Build genotype
-        g = Genotype(1.0,2.0,3.0, walls)
+        g = Genotype(self.cfg, 1.0,2.0,3.0, walls)
 
         self.assertEqual(g.height, 1)
         self.assertEqual(g.waveguide_height, 2)
@@ -36,12 +39,12 @@ class GenotypeTest(unittest.TestCase):
 
         # Build genotype and make sure the error is raised
         with self.assertRaises(ValueError):
-            Genotype(1, 2, 3, walls)
+            Genotype(self.cfg, 1, 2, 3, walls)
 
     def test_generate(self):
         """Tests Genotype generation with valid inputs."""
         rand = random.Random(GenotypeTest.SEED)
-        g = Genotype().generate(2, rand)
+        g = Genotype(self.cfg).generate(2, rand)
 
         self.assertEqual(g.height, 2.4030927323372038)
         self.assertEqual(g.waveguide_height, 877.9469895497862)
@@ -49,8 +52,7 @@ class GenotypeTest(unittest.TestCase):
         self.assertIsInstance(g.walls[0], WallPair)
         self.assertIsInstance(g.walls[1], WallPair)
 
-    # TODO @Kate Skocelas currently failing.
-    # Maybe using wp.MIN_HEIGHT instead of self.MIN_HEIGHT in _mutate_walls?
+    # TODO @Kate Skocelas currently failing, prior to config changes.
     
     # def test_mutate(self):
     #     """Tests the mutate method."""
