@@ -1,5 +1,6 @@
 """Abstract Evolver class defines the interface for all evolvers (e.g. NSGA-II, Lexicase, etc.)."""
 
+import random
 from abc import ABC, abstractmethod
 
 from src.Phenotype import Phenotype
@@ -10,14 +11,14 @@ class AbstractEvolver(ABC):
     """Evolvers perform everything needed to select and manage populations of individuals."""
 
     @abstractmethod
-    def evolve(self, population: list[Phenotype], generation_num: int) -> list[Phenotype]:
+    def evolve(self, population: list[Phenotype], generation_num: int, rand: random.Random) -> list[Phenotype]:
         """Take in a population and return a new population that has undergone selection and mutation."""
 
 
 class NSGA2(AbstractEvolver):
     """Implemented evolver for the Non-dominated Sorting Genetic Algorithm."""
 
-    def evolve(self, population: list[Phenotype], generation_num: int) -> list[Phenotype]:
+    def evolve(self, population: list[Phenotype], generation_num: int, rand: random.Random) -> list[Phenotype]:
         """
         Do one generation of NSGA-II.
 
@@ -37,12 +38,13 @@ class NSGA2(AbstractEvolver):
         # Generate offspring
         offspring = []
         for i in range(pop_size):
-            parent1 = NSGATournament.select_one(population)
+            parent1 = NSGATournament.select_one(population, rand)
             # uncomment these lines for crossover
-            #parent2 = NSGATournament.select_one(population)
+            #parent2 = NSGATournament.select_one(population, rand)
             new_child_id = generation_num*pop_size + i
             #child = parent1.make_offspring(new_child_id, parent2)
-            child = parent1.make_offspring(new_child_id)
+            child = parent1.make_offspring(new_child_id, rand)
+            child.generation_created = generation_num
 
             offspring.append(child)
 

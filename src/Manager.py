@@ -3,13 +3,14 @@ import random
 
 from src.Evolver import NSGA2
 from src.Genotype import Genotype
+from src.Parameters import ParametersObject
 from src.Phenotype import Phenotype
 
 
 class Manager:
     """Manager class."""
 
-    def __init__(self) -> None:
+    def __init__(self, cfg: ParametersObject) -> None:
         """Constructor."""
         self.seed = 1  #TODO read in from config
         # coded
@@ -17,12 +18,16 @@ class Manager:
 
         self.population = []
 
-        self.per_site_mut_rate = 0.5 #TODO read in from config
-        self.mut_effect_size = 0.5 #TODO read in from config
+        selection_scheme_convert_dict = {
+            "NSGAII": NSGA2,
+        }
 
-        self.selection_scheme = NSGA2()
+        if cfg.selection_scheme not in selection_scheme_convert_dict:
+            raise ValueError("Invalid selection scheme")
 
-    def generate_random_population(self, pop_size: int, generation_num: int) -> None:
+        self.selection_scheme = selection_scheme_convert_dict[cfg.selection_scheme]()
+
+    def initialize_population(self, cfg: ParametersObject) -> None:
         """
         Generate a random population.
 
@@ -33,12 +38,15 @@ class Manager:
         :type pop_size: int
         :rtype: None
         """
+        pop_size = cfg.population_size
+        initial_generation_num = 0
+
         for individual in range(pop_size):
             # create new random Genotype with 4 sides
-            g = Genotype().generate(2, self.rand)
+            g = Genotype(cfg).generate(2, self.rand)
 
             # assign phenotype to genotype
-            p = Phenotype(g, str(individual), "None", generation_num)
+            p = Phenotype(g, str(individual), "None", initial_generation_num)
 
             # append phenotype to population
             self.population.append(p)
@@ -64,14 +72,14 @@ class Manager:
 
 def main() -> None:
     """Main function."""
-    pop_size = 10 #TODO read in from config
-    num_generations = 10  #TODO read in from config
-
     # 0. Initialize manager
     manager = Manager()
+    cfg = ParametersObject("config.toml")
+
+    num_generations = cfg.num_generations
 
     # 1. Randomly generates starting population
-    manager.generate_random_population(pop_size, 0)
+    manager.initialize_population()
 
     for generation_num in range(1, num_generations):
         print(generation_num)
