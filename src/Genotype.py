@@ -28,6 +28,8 @@ class Genotype:
     :type walls: list, optional
     """
 
+    # TODO constants should all be read in fron config instead of hardcoded
+    #  here
     # Logical constraint constants
     MIN_HEIGHT = 2.0                # lambda; inclusive
     MAX_HEIGHT = 5.0                # lambda; inclusive

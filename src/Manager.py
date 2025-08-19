@@ -44,8 +44,7 @@ class Manager:
             self.population.append(p)
 
     # TODO method to return best individual in population
-
-    def evolve_one_gen(self, generation_num: int) -> None:
+    def evolve_one_gen(self, generation_num: int, ind_id: str) -> None:
         """
         Evolve population for one generation.
 
@@ -72,6 +71,11 @@ def main() -> None:
     # 1. Randomly generates starting population
     manager.generate_random_population(pop_size, 0)
 
+    # Works like taking a ticket at the deli counter - an individual is
+    # given the next number up when created. Starts at popsize because first
+    # pop_size amount were already used to generate original population.
+    indv_id = pop_size
+
     for generation_num in range(1, num_generations):
         print(generation_num)
         # 2. Runs evaluation on population
@@ -83,8 +87,10 @@ def main() -> None:
         # 4. Selects individuals to replicate to the next generation, does evo
         # work on them (mutation, crossover, etc.) and updates population to the
         # next generation.
-        manager.evolve_one_gen(generation_num) # need to feed it generation
-        # because gen created is a variable you need to make a child Phenotype
+        manager.evolve_one_gen(generation_num, str(indv_id)) # need to feed it
+        # generation because gen created is a variable you need to make a
+        # child Phenotype
+        indv_id += 1 # increment naming ticket
 
 
 if __name__ == "__main__":
