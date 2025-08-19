@@ -1,0 +1,18 @@
+### Evolution parameters
+population_size = 100
+num_generations = 100
+per_site_mut_rate = 0.3
+mut_effect_size = 0.1
+selection_scheme = "NSGAII"
+
+### Individual parameters
+
+# Horn parameters
+MIN_HEIGHT = 2.0
+MAX_HEIGHT = 5.0
+MIN_WAVEGUIDE_HEIGHT = 200.0
+MAX_WAVEGUIDE_HEIGHT = 1000.0
+MIN_WAVEGUIDE_LENGTH = 100.0
+MAX_WAVEGUIDE_LENGTH = 1000.0
+
+# TODO add seed

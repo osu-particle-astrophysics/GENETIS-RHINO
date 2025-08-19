@@ -48,7 +48,7 @@ class Phenotype:
         self.generation_created = generation_created
         self.fitness_score = None # TODO replace with calc_fitness_score call
 
-    def make_offspring(self, new_id: int, per_site_mut_rate: float, mut_effect_size: float, rand: random.Random) -> object:
+    def make_offspring(self, new_id: int, rand: random.Random) -> object:
         """
         Make offspring.
 
@@ -69,6 +69,8 @@ class Phenotype:
         offspring.indv_id = new_id
 
         # mutate offspring
-        offspring.genotype.mutate(per_site_mut_rate, mut_effect_size, rand)
+        offspring.genotype.mutate(rand)
+
+        # TODO should evaluate fitness
 
         return offspring
