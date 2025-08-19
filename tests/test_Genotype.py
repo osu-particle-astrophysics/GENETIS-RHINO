@@ -54,7 +54,7 @@ class GenotypeTest(unittest.TestCase):
         rand = random.Random(self.SEED)
         g = Genotype().generate(2, rand)
         g.mutate(GenotypeTest.PER_SITE_MUT_RATE,
-                 GenotypeTest.MUT_AMPLITUDE, rand)
+             GenotypeTest.MUT_AMPLITUDE, rand)
 
         self.assertEqual(g.height, 2.4030927323372038)
         self.assertEqual(g.waveguide_height, 878.1496524811672)

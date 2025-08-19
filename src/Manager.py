@@ -1,6 +1,7 @@
 """Class for managing the evolution of a population of antennas."""
 import random
 
+from src.Evolver import NSGA2
 from src.Genotype import Genotype
 from src.Phenotype import Phenotype
 
@@ -19,7 +20,7 @@ class Manager:
         self.per_site_mut_rate = 0.5 #TODO read in from config
         self.mut_effect_size = 0.5 #TODO read in from config
 
-        self.selection_scheme = "Default" # TODO read in from config
+        self.selection_scheme = NSGA2()
 
     def generate_random_population(self, pop_size: int, generation_num: int) -> None:
         """
@@ -42,8 +43,6 @@ class Manager:
             # append phenotype to population
             self.population.append(p)
 
-    # TODO method to return best individual in population
-
     def evolve_one_gen(self, generation_num: int) -> None:
         """
         Evolve population for one generation.
@@ -54,16 +53,14 @@ class Manager:
         :param generation_num: The generation number of the new generation
         being created.
         :type generation_num: int
+        :param indv_id: Individual ID.
+        :type indv_id: str
         :rtype: None
         """
-        parent_population = self.population
-        next_gen_population = []
+        next_gen_pop = self.selection_scheme.evolve(self.population, generation_num)
+        self.population = next_gen_pop
 
-        # TODO MAX select parent Phenotypes to replicate and add their child
-        #  Phenotypes to next_gen_population as they are created
-
-        self.population = next_gen_population
-
+    # TODO method to return best individual in population
 
 def main() -> None:
     """Main function."""
@@ -87,8 +84,9 @@ def main() -> None:
         # 4. Selects individuals to replicate to the next generation, does evo
         # work on them (mutation, crossover, etc.) and updates population to the
         # next generation.
-        manager.evolve_one_gen(generation_num) # need to feed it generation
-        # because gen created is a variable you need to make a child Phenotype
+        manager.evolve_one_gen(generation_num) # need to feed it
+        # generation because gen created is a variable you need to make a
+        # child Phenotype
 
 
 if __name__ == "__main__":
