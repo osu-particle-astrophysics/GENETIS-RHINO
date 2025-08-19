@@ -149,7 +149,8 @@ class Genotype:
                     self.waveguide_length = max(self.waveguide_length, self.MIN_WAVEGUIDE_LENGTH)
                     # if over of max bound, set to max
                     self.waveguide_length = min(self.waveguide_length, self.MAX_WAVEGUIDE_LENGTH)
-        Genotype._mutate_walls(self.walls, per_site_mut_rate,
+        # mutate the Genotype's walls
+        self._mutate_walls(self.walls, per_site_mut_rate,
                                mut_effect_size, rand)
 
     def _mutate_walls(self, walls: list, per_site_mut_rate: float,
