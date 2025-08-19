@@ -1,7 +1,7 @@
 """Class for constructing an antenna's Phenotype and acting upon it."""
 import copy
 import random
-from typing import Optional, Self
+from typing import Optional
 
 
 class Phenotype:
