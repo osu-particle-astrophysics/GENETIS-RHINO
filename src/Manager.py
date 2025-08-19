@@ -1,6 +1,7 @@
 """Class for managing the evolution of a population of antennas."""
 import random
 
+from src.Evolver import NSGA2
 from src.Genotype import Genotype
 from src.Phenotype import Phenotype
 
@@ -19,7 +20,7 @@ class Manager:
         self.per_site_mut_rate = 0.5 #TODO read in from config
         self.mut_effect_size = 0.5 #TODO read in from config
 
-        self.selection_scheme = "Default" # TODO read in from config
+        self.selection_scheme = NSGA2()
 
     def generate_random_population(self, pop_size: int, generation_num: int) -> None:
         """
@@ -56,13 +57,8 @@ class Manager:
         :type generation_num: int
         :rtype: None
         """
-        parent_population = self.population
-        next_gen_population = []
-
-        # TODO MAX select parent Phenotypes to replicate and add their child
-        # Phenotypes to next_gen_population as they are created
-
-        self.population = next_gen_population
+        next_gen_pop = self.selection_scheme.evolve(self.population)
+        self.population = next_gen_pop
 
 
 def main() -> None:
