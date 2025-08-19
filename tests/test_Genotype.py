@@ -12,8 +12,11 @@ class GenotypeTest(unittest.TestCase):
     SEED = 1                 # random number generator seed
     PER_SITE_MUT_RATE = 0.3  # per site mutation rate
     MUT_AMPLITUDE = 0.1      # mutation amplitude
-
+    
+    # Temporary, to get tests compliant with new config
     cfg = ParametersObject("src/config.toml")
+    cfg.per_site_mut_rate = PER_SITE_MUT_RATE
+    cfg.mut_effect_size = MUT_AMPLITUDE
 
     def test_constructor(self):
         """Tests the Genotype constructor with valid inputs."""
@@ -52,18 +55,16 @@ class GenotypeTest(unittest.TestCase):
         self.assertIsInstance(g.walls[0], WallPair)
         self.assertIsInstance(g.walls[1], WallPair)
 
-    # TODO @Kate Skocelas currently failing, prior to config changes.
-    
-    # def test_mutate(self):
-    #     """Tests the mutate method."""
-    #     rand = random.Random(self.SEED)
-    #     g = Genotype().generate(2, rand)
-    #     g.mutate(GenotypeTest.PER_SITE_MUT_RATE,
-    #              GenotypeTest.MUT_AMPLITUDE, rand)
 
-    #     self.assertEqual(g.height, 2.4030927323372038)
-    #     self.assertEqual(g.waveguide_height, 878.1496524811672)
-    #     self.assertEqual(g.waveguide_length, 787.3245830694012)
+    def test_mutate(self):
+        """Tests the mutate method."""
+        rand = random.Random(self.SEED)
+        g = Genotype(self.cfg).generate(2, rand)
+        g.mutate(rand)
+
+        self.assertEqual(g.height, 2.4030927323372038)
+        self.assertEqual(g.waveguide_height, 878.1496524811672)
+        self.assertEqual(g.waveguide_length, 787.3245830694012)
 
 if __name__ == '__main__':
     unittest.main()
