@@ -43,8 +43,7 @@ class Manager:
             # append phenotype to population
             self.population.append(p)
 
-    # TODO method to return best individual in population
-    def evolve_one_gen(self, generation_num: int, ind_id: str) -> None:
+    def evolve_one_gen(self, generation_num: int, indv_id: str) -> None:
         """
         Evolve population for one generation.
 
@@ -54,11 +53,14 @@ class Manager:
         :param generation_num: The generation number of the new generation
         being created.
         :type generation_num: int
+        :param indv_id: Individual ID.
+        :type indv_id: str
         :rtype: None
         """
         next_gen_pop = self.selection_scheme.evolve(self.population)
         self.population = next_gen_pop
 
+    # TODO method to return best individual in population
 
 def main() -> None:
     """Main function."""
