@@ -14,9 +14,9 @@ class Analysis:
         self.population = population
         self.generation_counter = 0
 
-    def update(self) -> None:
+    def update(self, generation_num: int) -> None:
         """Increment the generation counter; write to the fitness and the best individual CSV files."""
-        self.generation_counter += 1
+        self.generation_counter = generation_num
         print(f"Generation: {self.generation_counter}")
         self.update_fitness()
         self.update_best_individual()
@@ -48,6 +48,7 @@ class Analysis:
             return pd.DataFrame(row)
         indv_df = pd.concat([make_row(indv) for indv in best_indvs])
         indv_df.to_csv(csv_path, mode="w", header=True, index=False)
+        return indv_df
 
     def update_fitness(self) -> None:
         """Read the fitness from each individual and calculate the maximum and average."""
