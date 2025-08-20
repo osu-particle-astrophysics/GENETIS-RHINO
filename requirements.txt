@@ -1,2 +1,7 @@
+astropy
+astropy_healpix
+healpy
+numpy
 pytest==8.3.3
 pandas
+pylab
