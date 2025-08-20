@@ -19,7 +19,7 @@ class AnalysisTest(unittest.TestCase):
         p = Phenotype(g, "James", "None", 0)
 
         r = random.randint
-        genotypes = [Genotype().generate(2, random.Random(1)) for _ in range(population_size)]
+        genotypes = [Genotype(cfg).generate(2, random.Random(1)) for _ in range(population_size)]
         phenotypes = [Phenotype(g, "Evan", "None", 0) for g in genotypes]
         for p in phenotypes:
             p.nsgaii_rank = r(0,10)
