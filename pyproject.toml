@@ -47,8 +47,24 @@ ignore = [
     # Unused variables
     "ARG002",
     "F841",
+    "B007",
 
     "C901",
+
+    # Asserts
+    "S101",
+    "PT018",
+
+    # Lowercase variables
+    "N806",
+    "N803",
+    "N802",
+
+    # Format specifiers
+    "UP031",
+
+    # glob
+    "PTH207",
 ]
 
 [tool.ruff.lint.pylint]

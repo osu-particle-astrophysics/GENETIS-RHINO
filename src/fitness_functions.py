@@ -1,3 +1,5 @@
+"""This files contains functions for calculating fitness values."""
+
 import glob
 
 import healpy as hp
@@ -17,54 +19,51 @@ def beam_correction_factor(beam_power_db : npt.ArrayLike,
                            beam_ref_idx : int,
                            ref_map_path : str="src/assets/haslam408_dsds_Remazeilles2014.fits",
                            location : EarthLocation = None,
-                           obstime : Time = None):
+                           obstime : Time = None) -> npt.ArrayLike:
     """
-    Calculates the beam correction factor as defined in Eq. 7 of 
-    Spinelli et al. (2022) [https://doi.org/10.1093/mnras/stac1804].
-    
-    This factor accounts for the chromaticity of the beam as it couples 
-    to the radio foreground brightness temperature distribution. The 
-    measured frequency spectrum (antenna pattern times sky brightness, 
-    integrated over the sky at each frequency) can be divided by this 
-    factor to give a partial correction for the chromatic response of 
+    Calculates the beam correction factor as defined in Eq. 7 of Spinelli et al. (2022) [https://doi.org/10.1093/mnras/stac1804].
+
+    This factor accounts for the chromaticity of the beam as it couples
+    to the radio foreground brightness temperature distribution. The
+    measured frequency spectrum (antenna pattern times sky brightness,
+    integrated over the sky at each frequency) can be divided by this
+    factor to give a partial correction for the chromatic response of
     the beam.
 
-    This function loads a reference temperature map, which is the Haslam 
-    all-sky 408 MHz map, reprocessed by Remazeilles et al. (2015). The 
-    reference frequency for the map is 408 MHz, and a simple power-law 
+    This function loads a reference temperature map, which is the Haslam
+    all-sky 408 MHz map, reprocessed by Remazeilles et al. (2015). The
+    reference frequency for the map is 408 MHz, and a simple power-law
     spectral index of beta = -2.7 is assumed.
-    
-    Parameters
-    ----------
+
+    Args:
         beam_power_db (array_like):
-            A 2D array containing the beam power pattern in dB as a function 
-            of frequency. This should not be peak-normalised. The shape 
+            A 2D array containing the beam power pattern in dB as a function
+            of frequency. This should not be peak-normalised. The shape
             should be `(Nfreqs, Npixels)`.
         beam_alt_deg (array_like):
-            A 1D array containing the altitude coordinate of each element of 
-            `beam_power_db`, in degrees. The pattern is assumed to be 
-            pointing up at zenith, i.e. the boresight points to alt=90 deg. 
+            A 1D array containing the altitude coordinate of each element of
+            `beam_power_db`, in degrees. The pattern is assumed to be
+            pointing up at zenith, i.e. the boresight points to alt=90 deg.
         beam_az_deg (array_like):
-            A 1D array containing the azimuth coordinate of each element of 
-            `beam_power_db`, in degrees.
+            A 1D array containing the azimuth coordinate of each element of
+            `beam_power_db`, in degrees
         beam_freqs_MHz (array_like):
-            Frequencies that the beam correction factor should be evaluated at, 
+            Frequencies that the beam correction factor should be evaluated at,
             in MHz.
         beam_ref_idx (int):
             Which reference frequency to use from the `beam_freqs_MHz` array.
         ref_map_path (str):
-            Path to the Haslam 408 MHz map, `haslam408_dsds_Remazeilles2014.fits`. This 
+            Path to the Haslam 408 MHz map, `haslam408_dsds_Remazeilles2014.fits`. This
             can be obtained from the following URL:
             `http://www.jb.man.ac.uk/research/cosmos/haslam_map/haslam408_dsds_Remazeilles2014.fits`
         location (astropy.EarthLocation):
-            Object containing the location of the observer. If left unspecified, 
+            Object containing the location of the observer. If left unspecified,
             will default to Jodrell Bank, `lat=53.2421deg, lon=-2.3067deg, height=70`.
         obstime (astropy.Time):
-            Object containing the time of the observation. If unspecified, will 
+            Object containing the time of the observation. If unspecified, will
             default to `2025-08-01 22:00:00Z`.
 
-    Returns
-    -------
+    Returns:
         bcf (array_like):
             Beam correction factor at each frequency. This is a dimensionless ratio.
 
@@ -120,15 +119,13 @@ def calculate_bcf_stats(freqs : npt.ArrayLike, bcf : npt.ArrayLike) -> dict:
     """
     Very simple summary statistics about the beam correction factor.
 
-    Parameters
-    ----------
+    Args:
         freqs (array_like):
             Frequencies at which the BCF was evaluated. Assumed to be in MHz.
         bcf (array_like):
             Array of BCF values.
 
-    Returns
-    -------
+    Returns:
         stats (dict):
             Dictionary of simple summary statistics.
 
@@ -147,10 +144,8 @@ def calculate_bcf_stats(freqs : npt.ArrayLike, bcf : npt.ArrayLike) -> dict:
 
 
 def load_uan(fname : str) -> tuple[float, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike]:
-    """
-    Load antenna pattern data from a UAN text file.
-    """
-    def strip_header(f):
+    """Load antenna pattern data from a UAN text file."""
+    def strip_header(f : str) -> tuple[int, int, str, float]:
         # Parse and strip header lines from input file
         phi_inc = theta_inc = magnitude = None    # need these to process the file
         line = f.readline()
@@ -173,14 +168,19 @@ def load_uan(fname : str) -> tuple[float, npt.ArrayLike, npt.ArrayLike, npt.Arra
             "Required headers missing"
         return phi_inc, theta_inc, magnitude_unit, freq_hz
 
-    def polar_to_re_im(fn, amp, phase):
+    def polar_to_re_im(fn : callable, amp : float, phase : float) -> complex:
         # amp in dB and phase in degrees
         return fn(amp) * (np.cos(np.deg2rad(phase)) + 1.j*np.sin(np.deg2rad(phase)))
 
     # Helper conversion functions
-    dB_to_lin = lambda vals: 10.**(vals/10.)
-    no_change = lambda vals: vals
-    to_power = lambda efield: (efield[0] * np.conj(efield[0]) + efield[1] * np.conj(efield[1])).real
+    def dB_to_lin(vals : npt.ArrayLike) -> npt.ArrayLike:
+        return 10.**(vals/10.)
+
+    def no_change(vals : npt.ArrayLike) -> npt.ArrayLike:
+        return vals
+
+    def to_power(efield : tuple[complex, complex]) -> float:
+        return (efield[0] * np.conj(efield[0]) + efield[1] * np.conj(efield[1])).real
 
     # Open file and parse data
     with open(fname) as f:
@@ -216,7 +216,7 @@ def load_uan(fname : str) -> tuple[float, npt.ArrayLike, npt.ArrayLike, npt.Arra
         values[_za//za_inc, _az//az_inc] = to_power((E_az, E_za))
 
         # need to convert power to dB here
-        # dB = 10 × log10(Watts / Reference Power)
+        # dB = 10 * log10(Watts / Reference Power)
         values[_za//za_inc, _az//az_inc] = 10 * np.log10(values[_za//za_inc, _az//az_inc])
 
     # Check that array isn't blank
@@ -226,19 +226,16 @@ def load_uan(fname : str) -> tuple[float, npt.ArrayLike, npt.ArrayLike, npt.Arra
 
 def load_uan_directory(path : str, suffix : str = ".uan") -> tuple[npt.ArrayLike, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike]:
     """
-    Load a series of UAN files from a directory, and pack into an array 
-    ordered by frequency.
+    Load a series of UAN files from a directory, and pack into an array ordered by frequency.
 
-    Parameters
-    ----------
+    Args:
         path (str):
-            Path to directory. This directory is assumed to contain a collection of uan 
+            Path to directory. This directory is assumed to contain a collection of uan
             files for the same antenna at different frequencies.
         suffix (str):
             Suffix of the data files, e.g. '.uan'.
 
-    Returns
-    -------
+    Returns:
         beams (array_like):
             Beams packaged together into shape `(Nfreqs, Nza, Naz)`.
         freqs (array_like):
@@ -276,9 +273,7 @@ def load_uan_directory(path : str, suffix : str = ".uan") -> tuple[npt.ArrayLike
 
     # Re-order arrays
     idxs = np.argsort(freqs)
-    beams = []
-    for idx in idxs:
-        beams.append(beam_list[idx])
+    beams = [beam_list[idx] for idx in idxs]
     beams = np.array(beams)
     freqs = np.unique(freqs)
     return beams, freqs, za, az
@@ -286,16 +281,14 @@ def load_uan_directory(path : str, suffix : str = ".uan") -> tuple[npt.ArrayLike
 
 def calculate_fitnesses(uan_directory_root : str) -> dict:
     """
-    Calculates fitness values (on all objectives)
+    Calculates fitness values (on all objectives).
 
-    Parameters
-    ----------
-        uan_directory_root (str): Path to directory. This directory is assumed to 
-            contain a collection of uan files for the same antenna at 
+    Args:
+        uan_directory_root (str): Path to directory. This directory is assumed to
+            contain a collection of uan files for the same antenna at
             different frequencies.
 
-    Returns
-    -------
+    Returns:
         bcf_statistics (dict): a dictionary where keys are statistic names and
             values are the values of those statistics (which can be used as fitness
             functions)
@@ -324,13 +317,16 @@ def calculate_fitnesses(uan_directory_root : str) -> dict:
     return calculate_bcf_stats(freqs, bcf)
 
 
-def make_plots(uan_directory_root : str):
-    # plt.subplot(111)
-    # plt.plot(freqs, bcf)
-    # plt.xlabel("Freq. [MHz]")
-    # plt.ylabel("BCF")
-    # plt.show()
+def make_plots(uan_directory_root : str) -> None:
+    """
+    Makes plots of the beam power and beam correction factor.
 
+    Args:
+        uan_directory_root (str): Path to directory. This directory is assumed to
+            contain a collection of uan files for the same antenna at
+            different frequencies.
+
+    """
     beams, freqs, za, az = load_uan_directory(uan_directory_root)
 
     alt = 90-za              # Get altitude and work off that
