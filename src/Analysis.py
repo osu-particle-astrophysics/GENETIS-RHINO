@@ -2,7 +2,6 @@
 from pathlib import Path
 
 import pandas as pd
-
 from src.Phenotype import Phenotype
 
 
@@ -28,9 +27,9 @@ class Analysis:
         self.to_csv_best_individual(best_indvs)
         return best_indvs
 
-    def to_csv_best_individual(self, 
-                               best_indvs: list[Phenotype], 
-                               csv_path: str="best_individuals.csv"
+    def to_csv_best_individual(self,
+                               best_indvs: list[Phenotype],
+                               csv_path: str="best_individuals.csv",
     ) -> None:
         """Write the attributes of the best phenotypes to a CSV file."""
 
