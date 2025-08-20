@@ -1,5 +1,6 @@
 import glob
 import numpy as np
+import numpy.typing as npt
 import pylab as plt
 
 from astropy import units as u
@@ -10,14 +11,14 @@ from astropy_healpix import HEALPix
 import healpy as hp
 
 
-def beam_correction_factor(beam_power_db,
-                           beam_alt_deg,
-                           beam_az_deg,
-                           beam_freqs_MHz,
-                           beam_ref_idx,
-                           ref_map_path="haslam408_dsds_Remazeilles2014.fits", 
-                           location=None, 
-                           obstime=None):
+def beam_correction_factor(beam_power_db : npt.ArrayLike,
+                           beam_alt_deg : npt.ArrayLike,
+                           beam_az_deg : npt.ArrayLike,
+                           beam_freqs_MHz : npt.ArrayLike,
+                           beam_ref_idx : int,
+                           ref_map_path : str="src/assets/haslam408_dsds_Remazeilles2014.fits", 
+                           location : EarthLocation = None, 
+                           obstime : Time = None):
     """
     Calculates the beam correction factor as defined in Eq. 7 of 
     Spinelli et al. (2022) [https://doi.org/10.1093/mnras/stac1804].
@@ -113,7 +114,7 @@ def beam_correction_factor(beam_power_db,
     return bcf
 
 
-def calculate_bcf_stats(freqs, bcf):
+def calculate_bcf_stats(freqs : npt.ArrayLike, bcf : npt.ArrayLike) -> dict:
     """
     Very simple summary statistics about the beam correction factor.
 
@@ -139,30 +140,8 @@ def calculate_bcf_stats(freqs, bcf):
     stats['max_abs_deriv'] = np.max(np.abs(np.diff(bcf) / np.diff(freqs)))
     return stats
 
-# Generate fictitious beam pattern and coords
-# az = np.linspace(0., 359., 360) #* u.deg
-# alt = np.linspace(0., 90., 90) #* u.deg
-# az_grid, alt_grid = np.meshgrid(az, alt)
 
-# Very basic Gaussian beam
-# width_alt = 5. # deg
-# _beam_power_db = np.log10(np.exp(-0.5 * ((90. - alt_grid)/width_alt)**2.)) * 10.
-
-# plt.subplot(111)
-# plt.matshow(_beam_power_db, vmax=20., vmin=-50., fignum=False, aspect='auto')
-# cbar = plt.colorbar()
-# plt.xlabel("Azimuth [deg]")
-# plt.ylabel("Altitude [deg]")
-# cbar.set_label("Beam power [dB]")
-
-# Make fictitious beam pattern as fn. of frequency
-# beam_freqs = np.linspace(50., 100., 50) # MHz
-# beam_width = width_alt * (1. + 0.1 * np.cos(14 * beam_freqs[0]/beam_freqs)) # artificial ripple
-# beam_power_db = np.array([np.log10(np.exp(-0.5 * (alt_grid / beam_width[i])**2.)) * 10. 
-#                           for i in range(len(beam_freqs))])
-# print(beam_power_db.shape)
-
-def load_uan(fname):
+def load_uan(fname : str) -> tuple[float, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike]:
     """
     Load antenna pattern data from a UAN text file.
     """
@@ -239,14 +218,16 @@ def load_uan(fname):
     assert np.min(values) != 0
     return freq_hz, za, az, values
 
-def load_uan_directory(path, suffix='.uan'):
+
+def load_uan_directory(path : str, suffix : str = '.uan') -> tuple[npt.ArrayLike, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike]:
     """
     Load a series of UAN files from a directory, and pack into an array 
     ordered by frequency.
 
     Parameters:
         path (str):
-            Path to directory.
+            Path to directory. This directory is assumed to contain a collection of uan 
+            files for the same antenna at different frequencies.
         suffix (str):
             Suffix of the data files, e.g. '.uan'.
 
@@ -264,7 +245,7 @@ def load_uan_directory(path, suffix='.uan'):
     files = glob.glob("%s/*%s" % (path, suffix))
 
     # Current az, za arrays
-    az, za = None, None
+    az, za = np.array([]), np.array([])
     
     # Loop over files
     freqs = []
@@ -275,7 +256,7 @@ def load_uan_directory(path, suffix='.uan'):
         freq_hz, _za, _az, beam = load_uan(fname)
         
         # Compare az/za arrays to make sure the ordering is the same
-        if az is not None:
+        if az.size > 0:
             assert np.all(za == _za), "za arrays don't match"
             assert np.all(az == _az), "za arrays don't match"
         az = _az
@@ -295,7 +276,21 @@ def load_uan_directory(path, suffix='.uan'):
     return beams, freqs, za, az          
 
     
-def calculate_fitnesses(uan_directory_root):
+def calculate_fitnesses(uan_directory_root : str) -> dict:
+    """
+    Calculates fitness values (on all objectives)
+
+    Parameters:
+        uan_directory_root (str): Path to directory. This directory is assumed to 
+            contain a collection of uan files for the same antenna at 
+            different frequencies.
+
+    Returns:
+        bcf_statistics (dict): a dictionary where keys are statistic names and
+            values are the values of those statistics (which can be used as fitness
+            functions)
+
+    """
 
     # freq_hz, za, az, values = load_uan("uan_files/0_uan_files/0/0_0_1.uan")
 
@@ -319,7 +314,8 @@ def calculate_fitnesses(uan_directory_root):
     
     return calculate_bcf_stats(freqs, bcf)
 
-def make_plots(uan_directory_root):
+
+def make_plots(uan_directory_root : str):
     # plt.subplot(111)
     # plt.plot(freqs, bcf)
     # plt.xlabel("Freq. [MHz]")
