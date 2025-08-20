@@ -1,7 +1,7 @@
 astropy
 astropy_healpix
 healpy
+matplotlib
 numpy
 pytest==8.3.3
 pandas
-pylab
