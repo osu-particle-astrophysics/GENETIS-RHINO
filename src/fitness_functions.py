@@ -127,7 +127,17 @@ def calculate_bcf_stats(freqs : npt.ArrayLike, bcf : npt.ArrayLike) -> dict:
 
     Returns:
         stats (dict):
-            Dictionary of simple summary statistics.
+            Dictionary of simple summary statistics:
+            - max_abs_deriv: Phil's favorite. Maximum value of the derivative of the
+                BCF in frequency. Higher absolute values imply that somewhere in the
+                frequency range, there is a more rapid variation of the BCF with
+                frequency (lower is better)
+            - rms: root mean squared ms deviation of the BCF from 1. It will penalise
+                anything that deviates from 1, even if that deviation has no frequency
+                structure (lower is better).
+            - swing: difference between the maximum and minimum of the BCF. Can
+                be used to penalise large variations across the band, whether or
+                not they look smooth in frequency (lower is better)
 
     """
     stats = {}
@@ -139,6 +149,7 @@ def calculate_bcf_stats(freqs : npt.ArrayLike, bcf : npt.ArrayLike) -> dict:
     stats["swing"] = bcf.max() - bcf.min()
 
     # Calculate max. absolute derivative
+    # Lower is better
     stats["max_abs_deriv"] = np.max(np.abs(np.diff(bcf) / np.diff(freqs)))
     return stats
 
