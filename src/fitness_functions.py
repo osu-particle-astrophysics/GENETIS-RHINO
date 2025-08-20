@@ -1,14 +1,13 @@
 import glob
+
+import healpy as hp
 import numpy as np
 import numpy.typing as npt
 import pylab as plt
-
 from astropy import units as u
+from astropy.coordinates import AltAz, EarthLocation, Galactic, SkyCoord
 from astropy.time import Time
-from astropy.coordinates import SkyCoord, Galactic, EarthLocation, AltAz
 from astropy_healpix import HEALPix
-
-import healpy as hp
 
 
 def beam_correction_factor(beam_power_db : npt.ArrayLike,
@@ -16,8 +15,8 @@ def beam_correction_factor(beam_power_db : npt.ArrayLike,
                            beam_az_deg : npt.ArrayLike,
                            beam_freqs_MHz : npt.ArrayLike,
                            beam_ref_idx : int,
-                           ref_map_path : str="src/assets/haslam408_dsds_Remazeilles2014.fits", 
-                           location : EarthLocation = None, 
+                           ref_map_path : str="src/assets/haslam408_dsds_Remazeilles2014.fits",
+                           location : EarthLocation = None,
                            obstime : Time = None):
     """
     Calculates the beam correction factor as defined in Eq. 7 of 
@@ -35,7 +34,8 @@ def beam_correction_factor(beam_power_db : npt.ArrayLike,
     reference frequency for the map is 408 MHz, and a simple power-law 
     spectral index of beta = -2.7 is assumed.
     
-    Parameters:
+    Parameters
+    ----------
         beam_power_db (array_like):
             A 2D array containing the beam power pattern in dB as a function 
             of frequency. This should not be peak-normalised. The shape 
@@ -63,17 +63,19 @@ def beam_correction_factor(beam_power_db : npt.ArrayLike,
             Object containing the time of the observation. If unspecified, will 
             default to `2025-08-01 22:00:00Z`.
 
-    Returns:
+    Returns
+    -------
         bcf (array_like):
             Beam correction factor at each frequency. This is a dimensionless ratio.
+
     """
     # Load healpix reference map, assumed to be at 408 MHz
     spectral_index_ref_freq = 408. # MHz
     beta = -2.7 # spectral index for reference map power-law frequency spectrum
     ref_map = hp.fitsfunc.read_map(ref_map_path) # load map from fits file
-    
+
     # Set up HP object, which is assuemd to be in Galactic coords
-    hp_map = HEALPix(nside=hp.npix2nside(ref_map.size), order='RING', frame=Galactic())
+    hp_map = HEALPix(nside=hp.npix2nside(ref_map.size), order="RING", frame=Galactic())
 
     # Define local alt/az coordinate system
     if location is None:
@@ -81,7 +83,7 @@ def beam_correction_factor(beam_power_db : npt.ArrayLike,
     if obstime is None:
         obstime = Time("2025-08-01 22:00:00Z")
     frame_altaz = AltAz(obstime=obstime, location=location)
-    
+
     # Set up Astropy coordinate objects for each pixel of the beam
     coords = SkyCoord(beam_az_deg.ravel() * u.deg, beam_alt_deg.ravel() * u.deg, frame=frame_altaz)
 
@@ -96,7 +98,7 @@ def beam_correction_factor(beam_power_db : npt.ArrayLike,
     tsky_ref = tmap * (beam_freqs_MHz[beam_ref_idx] / spectral_index_ref_freq)**beta
     beam_integ_ref = np.sum(beam_ref)
     sky_times_beam_integ_ref = np.sum(beam_ref * tsky_ref)
-    
+
     # Loop over frequencies to calculate BCF
     bcf = np.zeros(beam_freqs_MHz.size)
     for i, freq in enumerate(beam_freqs_MHz):
@@ -118,26 +120,29 @@ def calculate_bcf_stats(freqs : npt.ArrayLike, bcf : npt.ArrayLike) -> dict:
     """
     Very simple summary statistics about the beam correction factor.
 
-    Parameters:
+    Parameters
+    ----------
         freqs (array_like):
             Frequencies at which the BCF was evaluated. Assumed to be in MHz.
         bcf (array_like):
             Array of BCF values.
 
-    Returns:
+    Returns
+    -------
         stats (dict):
             Dictionary of simple summary statistics.
+
     """
     stats = {}
-    
+
     # Calculate RMS value
-    stats['rms'] = np.sqrt(np.mean((bcf - 1.)**2.))
+    stats["rms"] = np.sqrt(np.mean((bcf - 1.)**2.))
 
     # Calculate swing
-    stats['swing'] = bcf.max() - bcf.min()
+    stats["swing"] = bcf.max() - bcf.min()
 
     # Calculate max. absolute derivative
-    stats['max_abs_deriv'] = np.max(np.abs(np.diff(bcf) / np.diff(freqs)))
+    stats["max_abs_deriv"] = np.max(np.abs(np.diff(bcf) / np.diff(freqs)))
     return stats
 
 
@@ -171,12 +176,12 @@ def load_uan(fname : str) -> tuple[float, npt.ArrayLike, npt.ArrayLike, npt.Arra
     def polar_to_re_im(fn, amp, phase):
         # amp in dB and phase in degrees
         return fn(amp) * (np.cos(np.deg2rad(phase)) + 1.j*np.sin(np.deg2rad(phase)))
-    
+
     # Helper conversion functions
     dB_to_lin = lambda vals: 10.**(vals/10.)
     no_change = lambda vals: vals
     to_power = lambda efield: (efield[0] * np.conj(efield[0]) + efield[1] * np.conj(efield[1])).real
-    
+
     # Open file and parse data
     with open(fname) as f:
         # Parse header
@@ -196,11 +201,11 @@ def load_uan(fname : str) -> tuple[float, npt.ArrayLike, npt.ArrayLike, npt.Arra
 
     # Unpack antenna pattern values
     # (Naxes_vec, 1, Nfeeds or Npols, Nfreqs, Naxes2, Naxes1)
-    values = np.zeros((za.size, az.size))      
+    values = np.zeros((za.size, az.size))
     for i in range(uan_values.shape[0]):
         _za = int(uan_values[i, 0])
         _az = int(uan_values[i, 1])
-        
+
         # E-field as complex number
         E_za = polar_to_re_im(scale, uan_values[i, 2], uan_values[i, 4])
         E_az = polar_to_re_im(scale, uan_values[i, 3], uan_values[i, 5])
@@ -219,19 +224,21 @@ def load_uan(fname : str) -> tuple[float, npt.ArrayLike, npt.ArrayLike, npt.Arra
     return freq_hz, za, az, values
 
 
-def load_uan_directory(path : str, suffix : str = '.uan') -> tuple[npt.ArrayLike, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike]:
+def load_uan_directory(path : str, suffix : str = ".uan") -> tuple[npt.ArrayLike, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike]:
     """
     Load a series of UAN files from a directory, and pack into an array 
     ordered by frequency.
 
-    Parameters:
+    Parameters
+    ----------
         path (str):
             Path to directory. This directory is assumed to contain a collection of uan 
             files for the same antenna at different frequencies.
         suffix (str):
             Suffix of the data files, e.g. '.uan'.
 
-    Returns:
+    Returns
+    -------
         beams (array_like):
             Beams packaged together into shape `(Nfreqs, Nza, Naz)`.
         freqs (array_like):
@@ -240,28 +247,29 @@ def load_uan_directory(path : str, suffix : str = '.uan') -> tuple[npt.ArrayLike
             Zenith angle, in deg.
         az (array_like):
             Azimuth angle, in deg.
+
     """
     # Get list of files
     files = glob.glob("%s/*%s" % (path, suffix))
 
     # Current az, za arrays
     az, za = np.array([]), np.array([])
-    
+
     # Loop over files
     freqs = []
     beam_list = []
     for fname in files:
-        
+
         # Load file
         freq_hz, _za, _az, beam = load_uan(fname)
-        
+
         # Compare az/za arrays to make sure the ordering is the same
         if az.size > 0:
             assert np.all(za == _za), "za arrays don't match"
             assert np.all(az == _az), "za arrays don't match"
         az = _az
         za  =_za
-        
+
         # Store frequencies and beams
         freqs.append(freq_hz / 1e6) # convert to MHz
         beam_list.append(beam)
@@ -273,25 +281,26 @@ def load_uan_directory(path : str, suffix : str = '.uan') -> tuple[npt.ArrayLike
         beams.append(beam_list[idx])
     beams = np.array(beams)
     freqs = np.unique(freqs)
-    return beams, freqs, za, az          
+    return beams, freqs, za, az
 
-    
+
 def calculate_fitnesses(uan_directory_root : str) -> dict:
     """
     Calculates fitness values (on all objectives)
 
-    Parameters:
+    Parameters
+    ----------
         uan_directory_root (str): Path to directory. This directory is assumed to 
             contain a collection of uan files for the same antenna at 
             different frequencies.
 
-    Returns:
+    Returns
+    -------
         bcf_statistics (dict): a dictionary where keys are statistic names and
             values are the values of those statistics (which can be used as fitness
             functions)
 
     """
-
     # freq_hz, za, az, values = load_uan("uan_files/0_uan_files/0/0_0_1.uan")
 
     # beams, freqs, za, az = load_uan_directory("uan_files/0_uan_files/1")
@@ -311,7 +320,7 @@ def calculate_fitnesses(uan_directory_root : str) -> dict:
                                 beam_freqs_MHz=freqs,
                                 beam_ref_idx=freqs.size//2,
                                 )
-    
+
     return calculate_bcf_stats(freqs, bcf)
 
 
@@ -341,7 +350,7 @@ def make_plots(uan_directory_root : str):
 
     plt.figure(figsize=(10, 4))
     plt.subplot(121)
-    plt.matshow(beams[0], vmax=20., vmin=-50., fignum=False, aspect='auto')
+    plt.matshow(beams[0], vmax=20., vmin=-50., fignum=False, aspect="auto")
     cbar = plt.colorbar()
     plt.xlabel("Azimuth [deg]")
     plt.ylabel("Altitude [deg]")
