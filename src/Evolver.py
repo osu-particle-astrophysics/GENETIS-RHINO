@@ -129,11 +129,12 @@ def crowding_distance_assignment(front: list) -> None:
     if len(front) == 1:
         front[0].nsgaii_distance = float("inf")
         return
-    if len(front) == 2:
+    num_for_double_front = 2
+    if len(front) == num_for_double_front:
         front[0].nsgaii_distance = float("inf")
         front[1].nsgaii_distance = float("inf")
         return
-    
+
     for indiv in front:
         indiv.nsgaii_distance = 0.0
 
