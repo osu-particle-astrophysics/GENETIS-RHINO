@@ -66,7 +66,7 @@ class NSGA2(AbstractEvolver):
         return (new_pop)
 
 ### Helper functions for NSGAII
-def fast_non_dominated_sort(population: list) -> None:
+def fast_non_dominated_sort(population: list) -> list[list]:
     """Assigns NSGA-II Pareto rank to each individual in the population. Lower rank = better front."""
     fronts: list[list] = [[]]
 
@@ -103,6 +103,7 @@ def fast_non_dominated_sort(population: list) -> None:
                     next_front.append(q)
         i += 1
         fronts.append(next_front)
+    return fronts[:-1]
 
 def dominates(p: Phenotype, q: Phenotype) -> bool:
     """
@@ -113,7 +114,9 @@ def dominates(p: Phenotype, q: Phenotype) -> bool:
     q (Phenotype): Second individual to compare
 
     """
-    return any(p.fitness[obj] < q.fitness[obj] for obj in p.fitness)
+    p_better_or_equal = all(p.fitness[obj] <= q.fitness[obj] for obj in p.fitness)
+    p_strictly_better = any(p.fitness[obj] < q.fitness[obj] for obj in p.fitness)
+    return p_better_or_equal and p_strictly_better
 
 def crowding_distance_assignment(front: list) -> None:
     """
@@ -121,6 +124,17 @@ def crowding_distance_assignment(front: list) -> None:
 
     Args: front: A collection of individuals on the same front
     """
+    if len(front) == 0:
+        return
+    if len(front) == 1:
+        front[0].nsgaii_distance = float("inf")
+        return
+    num_for_double_front = 2
+    if len(front) == num_for_double_front:
+        front[0].nsgaii_distance = float("inf")
+        front[1].nsgaii_distance = float("inf")
+        return
+
     for indiv in front:
         indiv.nsgaii_distance = 0.0
 
@@ -132,14 +146,19 @@ def crowding_distance_assignment(front: list) -> None:
         f_min = front[0].fitness[obj]
         f_max = front[-1].fitness[obj]
 
+        # If equal we will get division by zero, so skip
+        if f_max == f_min:
+            continue
+
         # Boundary points get infinite distance
         front[0].nsgaii_distance = float("inf")
         front[-1].nsgaii_distance = float("inf")
 
         # For every point in the front
         for i in range(1, len(front) - 1):
-            # Get the two closest points
-            prev_f = front[i - 1].fitness[obj]
-            next_f = front[i + 1].fitness[obj]
-            # Assign normalized crowding distance
-            front[i].nsgaii_distance += (next_f - prev_f) / (f_max - f_min)
+            if front[i].nsgaii_distance != float("inf"):
+                # Get the two closest points
+                prev_f = front[i - 1].fitness[obj]
+                next_f = front[i + 1].fitness[obj]
+                # Assign normalized crowding distance
+                front[i].nsgaii_distance += (next_f - prev_f) / (f_max - f_min)
