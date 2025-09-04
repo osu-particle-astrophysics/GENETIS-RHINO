@@ -1,7 +1,7 @@
 ### Evolution Parameters ###
 random_num_seed = 1
-population_size = 500           # TODO confirm
-num_generations = 1000          # TODO confirm
+population_size = 500           # TODO confirm with Emily/Charles
+num_generations = 1000          # TODO confirm with Emily/Charles
 per_site_mut_rate = 0.3
 mut_effect_size = 0.1
 selection_scheme = "NSGAII"
