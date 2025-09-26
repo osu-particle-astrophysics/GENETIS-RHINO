@@ -40,10 +40,9 @@ class NSGA2(AbstractEvolver):
         for i in range(pop_size):
             parent1 = ga_selectors.NSGATournament.select_one(population, rand)
             # uncomment these lines for crossover
-            #parent2 = NSGATournament.select_one(population, rand)
+            # parent2 = NSGATournament.select_one(population, rand)
             new_child_id = str(generation_num * pop_size + i)
-            child = parent1.make_offspring(new_child_id, generation_num,
-                                           rand)
+            child = parent1.make_offspring(new_child_id, generation_num, rand)
             offspring.append(child)
 
         # Combine parents + offspring
@@ -62,6 +61,7 @@ class NSGA2(AbstractEvolver):
                 break
 
         return new_pop
+
 
 ### Helper functions for NSGAII
 def fast_non_dominated_sort(population: list) -> list[list]:
@@ -103,6 +103,7 @@ def fast_non_dominated_sort(population: list) -> list[list]:
         fronts.append(next_front)
     return fronts[:-1]
 
+
 def dominates(p: Phenotype, q: Phenotype) -> bool:
     """
     Returns True if individual p dominates q (minimization).
@@ -115,6 +116,7 @@ def dominates(p: Phenotype, q: Phenotype) -> bool:
     p_better_or_equal = all(p.fitness_scores[obj] <= q.fitness_scores[obj] for obj in p.fitness_scores)
     p_strictly_better = any(p.fitness_scores[obj] < q.fitness_scores[obj] for obj in p.fitness_scores)
     return p_better_or_equal and p_strictly_better
+
 
 def crowding_distance_assignment(front: list) -> None:
     """

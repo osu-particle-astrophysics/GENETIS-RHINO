@@ -16,7 +16,7 @@ function main() {
     var setup_file = process_new_file(setup_dir);
     if (setup_file != null && setup_file != "") {
       var setup_data = jsonparse(setup_file);
-
+      updateNextSimulationNumber(setup_data.indv);
       xf_setup(setup_data);
     }
 
@@ -27,7 +27,6 @@ function main() {
 
       xf_output(
         output_data.indv_dir,
-        output_data.gaintype,
         output_data.indv_num,
         output_data.num_freqs
       );
@@ -38,35 +37,61 @@ function main() {
 function xf_setup(setup_data) {
   // Function calls to setup xfdtd simulation and build antenna
 
-  App.getActiveProject().getGeometryAssembly().clear();
-  App.getActiveProject().getMaterialList().clear();
+  // Checking if simulation has already been done
+  var sim_num = setup_data.indv;
+  var simlength = sim_num.toString().length;
+  var totchars = 6;
+  var init = "";
+  for (var i = 0; i < totchars - simlength; i++) {
+    init = init + "0";
+  }
+  var sim_num = init + sim_num;
+  var proj_dir = App.getActiveProject().getProjectDirectory();
+  var sim_dir = new Dir(proj_dir + "/Simulations/" + sim_num + "/Run0001/");
 
-  build_walls(setup_data);
-  build_ridges(setup_data);
-  build_waveguide(setup_data);
-  create_feeds(setup_data);
+  if (sim_dir.exists()) {
+    return;
+  } else {
+    build_waveguide(1 * s1, 1 * s1, 1 * s1, -1 * wgd);
+    build_walls(s1, m1, h1, 0);
+    if (N == 1) {
+      build_walls(s2, m2, 1 * h2, 1 * ah);
+    }
 
-  create_grid(setup_data);
-  create_sensors(setup_data);
-  create_sim_data(setup_data);
-  queue_sim(setup_data);
-  make_image(setup_data);
+    create_grid(setup_data);
+    create_sensors(setup_data);
+    create_sim_data(setup_data);
+    queue_sim(setup_data);
+    make_image(setup_data);
+
+    clearLists(10000, 100);
+  }
 }
 
 function jsonparse(fullpath) {
-  // This function will parse in the json file and return the filedata in an XF readable format
-  // This is the name of the file
+  var maxRetries = 50;
+  var attempt = 0;
 
-  var file = new File(fullpath);
-  file.open(1);
-  var data = file.readAll();
-  // parsing in the json file
-  var filedata = JSON.parse(data);
-  // Closing File
-  file.close(1);
+  while (attempt < maxRetries) {
+    try {
+      var file = new File(fullpath);
+      file.open(1);
+      var data = file.readAll();
 
-  // Returning the data
-  return filedata;
+      data = data.replace(/^\uFEFF/, "");
+
+      var filedata = JSON.parse(data);
+      file.close(1);
+      return filedata;
+    } catch (e) {
+      print("Attempt " + (attempt + 1) + " failed: " + e);
+      attempt++;
+      App.sleep(100);
+    }
+  }
+
+  print("Failed to parse JSON after " + maxRetries + " attempts: " + fullpath);
+  return null;
 }
 
 function process_new_file(dir_to_check) {
@@ -99,4 +124,100 @@ function strip_json(filename) {
     return filename.substr(0, len - 5);
   }
   return filename;
+}
+
+function clearLists(timeoutMs, sleepMs) {
+  timeoutMs = timeoutMs || 5000;
+  sleepMs = sleepMs || 50;
+  var startTime = new Date().getTime();
+
+  var proj = App.getActiveProject();
+  if (!proj) {
+    return false;
+  }
+
+  var waveformlist, componentlist, geo_assembly, mat_list;
+  try {
+    waveformlist = proj.getWaveformList();
+    componentlist = proj.getCircuitComponentList();
+    geo_assembly = proj.getGeometryAssembly();
+    mat_list = proj.getMaterialList();
+
+    if (waveformlist) waveformlist.clear();
+    if (componentlist) componentlist.clear();
+    if (geo_assembly) geo_assembly.clear();
+    if (mat_list) mat_list.clear();
+
+    clearAllCircuitComponentDefinitions();
+  } catch (e) {
+    print("clearLists initial error: " + e);
+    return false;
+  }
+
+  // poll just a few times to confirm empty
+  while (new Date().getTime() - startTime < timeoutMs) {
+    try {
+      var w = waveformlist ? waveformlist.getAllWaveformNames().length : 0;
+      var c = componentlist
+        ? componentlist.getAllCircuitComponentNames().length
+        : 0;
+      var g = geo_assembly ? geo_assembly.getPartCount() : 0;
+      var m = mat_list ? mat_list.getAllMaterialNames().length : 0;
+
+      if (w === 0 && c === 0 && g === 0 && m === 0) {
+        return true;
+      }
+    } catch (e) {
+      print("clearLists polling error: " + e);
+      return false;
+    }
+
+    App.sleep(sleepMs);
+  }
+
+  return false;
+}
+
+function clearAllCircuitComponentDefinitions() {
+  var proj = App.getActiveProject();
+  if (!proj) {
+    print("clearAllCircuitComponentDefinitions: no active project");
+    return;
+  }
+
+  var list;
+  try {
+    list = proj.getCircuitComponentDefinitionList();
+    if (!list) return;
+
+    var names = list.getAllCircuitComponentDefinitionNames();
+    if (!names) return;
+
+    for (var i = 0; i < names.length; i++) {
+      try {
+        list.removeCircuitComponentDefinition(names[i]);
+      } catch (e) {
+        print("Failed to remove component '" + names[i] + "': " + e);
+      }
+    }
+  } catch (e) {
+    print("clearAllCircuitComponentDefinitions error: " + e);
+  }
+}
+
+function updateNextSimulationNumber(indv) {
+  var proj_dir = App.getActiveProject().getProjectDirectory();
+  var filePath =
+    proj_dir.replace(/\/+$/, "") + "/Simulations/.nextSimulationNumber";
+
+  // Check if the file exists
+  if (!File.exists(filePath)) {
+    return;
+  }
+
+  // Remove the old file
+  File.remove(filePath);
+
+  // Write the new number
+  File.write(filePath, String(indv));
 }

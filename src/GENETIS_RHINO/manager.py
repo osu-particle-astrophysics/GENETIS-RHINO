@@ -1,4 +1,5 @@
 """Class for managing the evolution of a population of antennas."""
+
 import pathlib
 import random
 
@@ -7,6 +8,7 @@ from src.GENETIS_RHINO.evolver import NSGA2
 from src.GENETIS_RHINO.genotype import Genotype
 from src.GENETIS_RHINO.parameters import ParametersObject
 from src.GENETIS_RHINO.phenotype import Phenotype
+from src.xfdtd.xf_job import XFdtdSim
 
 
 class Manager:
@@ -42,9 +44,12 @@ class Manager:
         initial_generation_num = 0
 
         # calculate how many individuals with and without ridges to generate
-        make_without_ridge = int(pop_size * float(
-            cfg.percent_no_ridge_at_start))
+        make_without_ridge = int(pop_size * float(cfg.percent_no_ridge_at_start))
         make_with_ridge = pop_size - make_without_ridge
+
+        # Initialized XFdtd class
+        run_dir = ""  # TODO: Formalize this
+        xf = XFdtdSim(run_dir, cfg)
 
         # generate starting individuals with ridges
         for individual in range(make_with_ridge):
@@ -52,7 +57,7 @@ class Manager:
             g = Genotype(cfg).generate_with_ridge(self.rand)
 
             # assign phenotype to genotype
-            p = Phenotype(g, str(individual), "None", initial_generation_num)
+            p = Phenotype(g, xf, str(individual), "None", initial_generation_num)
 
             # append phenotype to population
             self.population.append(p)
@@ -80,15 +85,14 @@ class Manager:
         :type generation_num: int
         :rtype: None
         """
-        next_gen_pop = self.selection_scheme.evolve(self.population,
-                                                    generation_num, self.rand)
+        next_gen_pop = self.selection_scheme.evolve(self.population, generation_num, self.rand)
         self.population = next_gen_pop
+
 
 def main() -> None:
     """Main function."""
     # 0. Initialize manager
-    cfg = ParametersObject(str(pathlib.Path(
-        __file__).parent.parent/"GENETIS_RHINO/config.toml"))
+    cfg = ParametersObject(str(pathlib.Path(__file__).parent.parent / "GENETIS_RHINO/config.toml"))
     manager = Manager(cfg)
 
     num_generations = int(cfg.num_generations)

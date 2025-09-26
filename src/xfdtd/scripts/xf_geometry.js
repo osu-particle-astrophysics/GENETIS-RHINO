@@ -1,17 +1,155 @@
-// Functions related to geometry building
-// TODO: Figure out the variables
-// List of Variables GA outputs:
-// - Waveguide height
-// - waveguide length
-// - horn height
-// - horn angle
-// - ridge height (% of horn height)
-// - top ridge width (% of horn width(?))
-// - bottom ridge width (% of horn width (?))
-// - top ridge thickness (% of horn length (?))
-// - bottom ridge thickness (% of horn length(?))
-// Need to have these functions take these in for building
+var sym_count = 0;
+var num_ridges = 4; // either 2 or 4
+
+// Order of genes:
+// S, H, x0, y0, xf, yf, zf, beta
+var Tau = 0.26; // Normalized parametric time--no good reason to be 0.26, but it's fine
+
+var height1 = 0.01; // Where we place the second power source; needs to not intersect the first one!
+var height2 = 0.06; // Where we place the second power source; needs to not intersect the first one!
+
+// Lists to hold the genes
+// Potential genes:
+// Number of side lengths (start with fixing at 2), number of wall sections, side length dimensions, opening angle(s), full height, waveguide depth, source height (in waveguide), ridge dimensions, additional wall parameters (new opening angles, height)
+
+/* Genes for wall pairs
+		:param angle: The angle of the wall pair. Must be between 0 and 90
+        degrees. Defaults to None.
+        :type angle: float, optional
+        :param ridge_height: The flare_height of the ridge as a percentage of the
+        total horn flare_height. Starts from bottom of horn. Must be between 0%
+        and 100%(inclusive).
+        :type ridge_height: float, optional
+        :param ridge_width_top: The width of the ridge at the top of the horn.
+        Must be between 0 cm and 100 cm (inclusive).
+        :type ridge_width_top: float, optional
+        :param ridge_width_bottom: The width of the ridge at the bottom of
+        the .
+        Must be between 0 cm and 100 cm (inclusive).
+        :type ridge_width_bottom: float, optional
+        :param ridge_thickness_top: The thickness of the ridge. Must be
+        between 0 cm
+        and 100 cm (inclusive).
+        :type ridge_thickness_top: float, optional
+        :param ridge_thickness_bottom: The thickness of the ridge at the
+        bottom of the . Must be between 0 cm and 100 cm (inclusive).
+        :type ridge_thickness_bottom: float, optional
+        :rtype: None
+
+		self.has_ridge = False
+        self.angle = angle
+        :param flare_length: The length of the antenna's flare
+        :type flare_length: float, optional
+        :param waveguide_height: The flare_height of the waveguide.
+        :type waveguide_height: float, optional
+        :param waveguide_length: The length of the waveguide.
+        :type waveguide_length: float, optional
+        :param waveguide_width: The length of the waveguide.
+        :type waveguide_width: float, optional
+        :param walls: A list of WallPair objects that comprise the walls of the
+        antenna.
+
+*/
+
+/* Wall Genes */
+var num_walls = [];
+var angle1 = [];
+var angle2 = [];
+var wall_height1 = [];
+var wall_height2 = [];
+var wall_width1 = [];
+var wall_length1 = [];
+var wall_width2 = [];
+var wall_length2 = [];
+
+/* Ridge Genes */
+var has_ridge = [];
+var ridge_height = [];
+var ridge_width_top = [];
+var ridge_width_bottom = [];
+var ridge_thickness_top = [];
+var ridge_thickness_bottom = [];
+
+/* Waveguide Genes*/
+var waveguide_depth = [];
+
+/* Original Genes */
+
+var S = []; // Side length of bottom of antenna
+//var m=[];
+var H = []; // Height of antenna
+var X0 = []; // distance from center of ridges at bottom // previously 0.04
+var Y0 = []; // (half) width of ridges at bottom // previously 0.04
+var Z0 = []; // initial height of ridges (0 always for now)
+var Xf = []; // final distance from center of curve of ridges at max height
+var Yf = []; // final width of ridges at max height
+var Zf = []; // max height of ridges
+var Beta = []; // curvature of ridges
+var L = []; // (half) width of minor length of trapezoid extrude
+var h = []; // "height" of trapezoid extrude (in x-y plane; must be < x0)
+
+for (var i = indiv - 1; i < NPOP; i++) {
+  /* Original */
+  var s = S[i];
+  var ah = H[i];
+  var x0 = X0[i];
+  var y0 = Y0[i];
+  var z0 = 0;
+  var xf = s; // By constraint
+  var yf = Yf[i];
+  var zf = Zf[i];
+  var beta = Beta[i];
+  var l = L[i];
+  var th = h[i];
+  var m = 1; // Adjust this to read in the angle from the csv and convert to slope
+  var d = 0.03;
+
+  /* RHINO */
+  var N = num_walls[i];
+  var s1 = wall_length1[i];
+  var s2 = wall_length2[i];
+  var h1 = wall_height1[i];
+  var h2 = wall_height2[i];
+  var m1 = Math.tan((angle1[i] * Math.PI) / 180);
+  var m2 = Math.tan((angle2[i] * Math.PI) / 180);
+  /* Wall Genes */
+  var ridge = has_ridge[i];
+  var rh1 = has_ridge[i];
+  var rwt = ridge_width_top[i];
+  var rwb = ridge_width_bottom[i];
+  var rtt = ridge_thickness_top[i];
+  var rtb = ridge_thickness_bottom[i];
+  /* Waveguide */
+  var wgd = waveguide_depth[i];
+
+  // Function calls
+  // We do it twice, first for horizontal source then for vertical
+  for (var k = 0; k <= sym_count; k++) {
+    if (k == 0) {
+      height = -height1;
+    } else {
+      height = -height2;
+    }
+    T = (Tau / (Math.exp(zf / beta) - 1)) * (Math.exp(height / beta) - 1);
+    X = 1 * x0 + ((zf - x0) / Tau) * T; // Multiply x0 by 1 because otherwise it doesn't know it's a number lol
+
+    //l = (x0-y0)/4; //arbitrary
+
+    build_waveguide(1 * s1, 1 * s1, 1 * s1, -1 * wgd);
+
+    build_walls(s1, m1, h1, 0);
+    if (N == 1) {
+      build_walls(s2, m2, 1 * h2, 1 * ah);
+    }
+  }
+}
+
 function build_walls(S, m, H, z0) {
+  // Makes the outer walls of the horn antenna
+  // S is the side length of the bottom of the wall
+  // m is the coefficient for the linear function the walls extrude according to (currently set to 1)
+  // H is the final height of the walls
+
   // Make the edges to define the square
   var edge1 = Line(new Cartesian3D(-S, -S, 0), new Cartesian3D(-S, S, 0));
   var edge2 = Line(new Cartesian3D(-S, S, 0), new Cartesian3D(S, S, 0));
@@ -71,19 +209,19 @@ function build_walls(S, m, H, z0) {
   //App.getActiveProject().setMaterial( bottom, pecMaterial );						// Sets the material
 } // end buil_walls
 
-// Builds the ridges
-// Here are the arguments, which are primarily used when making the LawEdges
-// Bottom x: distance from center
-// Bottom y: distance from center
-// Bottom z: distance from center (keep to 0)
-// Top x: distance from center
-// Top y: distance from center
-// Top z: distance from center
-// tau: Arbitrary time limit used for the parametric curves (the ridge shapes)
-// beta: determines the curvature of the ridges
-// S: Side length of bottom of walls
-// m: Slope of walls (currently set to 1)
 function build_ridges(x_0, y_0, z_0, x_f, y_f, z_f, tau, beta, S, m) {
+  // Builds the ridges
+  // Here are the arguments, which are primarily used when making the LawEdges
+  // Bottom x: distance from center
+  // Bottom y: distance from center
+  // Bottom z: distance from center (keep to 0)
+  // Top x: distance from center
+  // Top y: distance from center
+  // Top z: distance from center
+  // tau: Arbitrary time limit used for the parametric curves (the ridge shapes)
+  // beta: determines the curvature of the ridges
+  // S: Side length of bottom of walls
+  // m: Slope of walls (currently set to 1)
   // Curves (Z is logarithmic in t)
   var Log1 = new LawEdge(
     "" + x_0 + " + (" + z_f + "-" + x_0 + ")/" + tau + "*u",
@@ -277,8 +415,9 @@ function build_ridges(x_0, y_0, z_0, x_f, y_f, z_f, tau, beta, S, m) {
     App.getActiveProject().setMaterial(assembly.at(x), pecMaterial);
   }
 }
-// Make a waveguide
-function build_waveguide(S, x_0, y_0, D) {
+
+function build_waveguide(S, D) {
+  // Make a waveguide
   // D for "depdth"
   // Make the edges to define the square
   var edge1 = Line(new Cartesian3D(-S, -S, 0), new Cartesian3D(-S, S, 0));
@@ -335,13 +474,13 @@ function build_waveguide(S, x_0, y_0, D) {
     .append(wallModel); // Adds the model to the project
   var pecMaterial = App.getActiveProject().getMaterialList().getMaterial("PEC"); // Makes the material available
   App.getActiveProject().setMaterial(wallProject, pecMaterial); // Sets the material
-  //App.getActiveProject().setMaterial( bottom, pecMaterial );						// Sets the material
 }
-// New extensions but with trapezoid shapes
-// We define L as the half length of the minor side of the trapezoid
-// We want the trapezoid to be at 45 degrees from the major base, so we
-//	say the height is y0 - L
+
 function extend_ridges_trapezoid(S, x_0, y_0, D, L, th) {
+  // New extensions but with trapezoid shapes
+  // We define L as the half length of the minor side of the trapezoid
+  // We want the trapezoid to be at 45 degrees from the major base, so we
+  //	say the height is y0 - L
   // D for "depdth", L for "Length"
   // Below works for example antenna at l = (x0-y0)/4
   // Make the edges to define the square
@@ -363,45 +502,6 @@ function extend_ridges_trapezoid(S, x_0, y_0, D, L, th) {
     new Cartesian3D(-S, -y_0, 0)
   ); // good
   var edge4 = Line(new Cartesian3D(-S, -y_0, 0), new Cartesian3D(-S, y_0, 0)); // good
-
-  // For original (45 degree opening) trapezoid\
-  /*
-	// Below works for example antenna at l = (x0-y0)/4
-	// Make the edges to define the square
-	var edge1 = Line( new Cartesian3D(-S  , y_0, 0), new Cartesian3D(-x_0, y_0, 0)); // good
-	var diag1 = Line( new Cartesian3D(-x_0, y_0, 0), new Cartesian3D(-x_0 - L + y_0, L, 0)); // good
-	var edge5 = Line( new Cartesian3D(-x_0 - L + y_0, L, 0), new Cartesian3D(-x_0 - L + y_0, -L, 0));	// good
-	var diag2 = Line( new Cartesian3D(-x_0 - L + y_0, -L, 0), new Cartesian3D(-x_0, -y_0, 0)); // good
-	var edge3 = Line( new Cartesian3D(-x_0,-y_0, 0), new Cartesian3D(-S, -y_0, 0)); // good
-	var edge4 = Line( new Cartesian3D(-S  ,-y_0, 0), new Cartesian3D(-S, y_0, 0)); // good
-*/
-  // NOT S COME ONNNNNNNNNNNNNNNN
-  /*	var edge1 = Line( new Cartesian3D(-S,-S, 0), new Cartesian3D(-S, S, 0));
-	var edge2 = Line( new Cartesian3D(-S, S, 0), new Cartesian3D(S/2, S, 0));
-	var diag1 = Line( new Cartesian3D(S/2, S, 0), new Cartesian3D(S, S/2, 0));	
-	var edge3 = Line( new Cartesian3D(S,S/2, 0), new Cartesian3D(S, -S/2, 0));
-	var diag2 = Line( new Cartesian3D(S, -S/2, 0), new Cartesian3D(S/2, -S, 0));	
-	var edge4 = Line( new Cartesian3D(S/2,-S, 0), new Cartesian3D(-S, -S, 0));
-*/
-  /*
-	// NOT S COME ONNNNNNNNNNNNNNNN
-	var edge1 = Line( new Cartesian3D(-S, y_0, 0), new Cartesian3D(-S+9*S/10, y_0, 0));
-	var diag1 = Line( new Cartesian3D(-S+9*S/10, y_0, 0), new Cartesian3D(-x_0, y_0/2, 0));
-	var edge2 = Line( new Cartesian3D(-x_0, y_0/2, 0), new Cartesian3D(-x_0, -y_0/2, 0));	
-	var diag2 = Line( new Cartesian3D(-x_0,-y_0/2, 0), new Cartesian3D(-S+9*S/10, -y_0, 0));
-	var edge3 = Line( new Cartesian3D(-S+9*S/10, -y_0, 0), new Cartesian3D(-S, -y_0, 0));	
-	var edge4 = Line( new Cartesian3D(-S,-y_0, 0), new Cartesian3D(-S, y_0, 0));
-*/
-
-  /*
-	// NOT S COME ONNNNNNNNNNNNNNNN
-	var edge1 = Line( new Cartesian3D(-S, y_0, 0), new Cartesian3D(-x_0-y_0/2, y_0, 0));
-	var diag1 = Line( new Cartesian3D(-x_0-y_0/2, y_0, 0), new Cartesian3D(-x_0, y_0/2, 0));
-	var edge2 = Line( new Cartesian3D(-x_0, y_0/2, 0), new Cartesian3D(-x_0, -y_0/2, 0));	
-	var diag2 = Line( new Cartesian3D(-x_0,-y_0/2, 0), new Cartesian3D(-x_0-y_0/2, -y_0, 0));
-	var edge3 = Line( new Cartesian3D(-x_0-y_0/2, -y_0, 0), new Cartesian3D(-S, -y_0, 0));	
-	var edge4 = Line( new Cartesian3D(-S,-y_0, 0), new Cartesian3D(-S, y_0, 0));
-*/
 
   // Declare sketches to be made from the edges
   var wallSegment = new Sketch();

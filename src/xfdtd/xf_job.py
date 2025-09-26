@@ -1,8 +1,8 @@
-"""xf_job.py contains class pertaining to running an individual through XFdtd to get antenna performance."""
+"""xf_job.py contains class pertaining to running an individual through XFdtd to get antenna performance. Using persistent XF instance in VDI."""
 
 import asyncio
+import getpass
 import json
-import os
 import shutil
 import subprocess
 import time
@@ -11,17 +11,14 @@ from pathlib import Path
 import numpy as np
 import psutil
 
-## Future Tasks
+from src.GENETIS_RHINO.parameters import ParametersObject
+from src.GENETIS_RHINO.genotype import Genotype
+
 # TODO: If there is a way to automatically submit a VDI that would be awesome. You'd still need one to start a run since you have to press no on XFdtd
 # TODO: Adjust convergence settings to be less rigourous in precision
 
-## Current Tasks
-# TODO: Fully integrate into RHINO system
-# TODO: Adjust to RHINO gene class system. This will require changing to_xf_readable function to whatever the input will be.
-# TODO: Change building scripts in xf_geometry.js to be RHINO functions
-# TODO: In xf_geometry.js, adjust the buildling scripts to take in genes from loop.
-# Currently it has confusing variables compared to what the GA is supposed to output.
-# TODO: Adjust how feed(s) are setup w/ feed script from PUEO
+# TODO: Have individuals wait if there are xf_keys # of indvs already simulating
+# TODO: Debug
 
 
 class XFdtdSim:
@@ -37,45 +34,82 @@ class XFdtdSim:
 
     _xf_lock = asyncio.Lock()
 
-    def __init__(self, run_dir: Path, cfg: any) -> None:
-        """Initialize."""
+    def __init__(self, run_dir: Path, cfg: ParametersObject):
         # Directories
         self.cfg = cfg
         self.run_dir = run_dir
-        self.xfproj = Path(f"{run_dir}/{cfg.run_name}.xf")
-        self.xf_scripts = Path(
-            f"{cfg.working_dir}/src/xfdtd/scripts",
-        )  # TODO: Make sure working_dir is defined or maybe a better way.
-        self.xf_run_scripts = run_dir / "xf_scripts"
+        self.xfproj = Path(f"{self.run_dir}/{run_dir.name}.xf")
+        self.xf_scripts = Path(__file__).parent / "scripts"
+        self.xf_run_scripts = self.run_dir / "xf_scripts"
 
         # Frequencies
-        self.freqs = np.arange(cfg.freq_start, cfg.freq_end + cfg.freq_step, cfg.freq_step)
+        self.freqs = np.arange(
+            cfg.freq_start, cfg.freq_end + cfg.freq_step, cfg.freq_step
+        )
         self.num_freqs = len(self.freqs)
 
-    async def antenna_sim(self, indv_genes: any, indv_dir: Path) -> None:
+        # Paths for Persistent XF files
+        if not Path.exists(self.xf_run_scripts):
+            Path.mkdir(self.xf_run_scripts, parents=True)
+        if not Path.exists(self.xf_run_scripts / "setup"):
+            Path.mkdir(self.xf_run_scripts / "setup", parents=True)
+        if not Path.exists(self.xf_run_scripts / "output"):
+            Path.mkdir(self.xf_run_scripts / "output", parents=True)
+
+    async def antenna_sim(self, indv_id: int, indv_genes: Genotype) -> None:
         """
         Setup and run XFdtd simulation to allow for antenna indv.
-
         Individual to indvuate is given in class declaration.
 
         Args:
-            indv_genes (ShapeIndividual): Genetic information for current indv
-            indv_dir (Path): Path to individuals directory
+            indv_id (int): Individual number
+            indv_genes (Genotype): Genetic information for current indv
 
         Returns:
-            Individual antenna simulation data.
+            indv_uan_dir (Path): Path to individuals uan file(s)
 
         """
+        # Create indv_dir for this individual
+        indv_dir = self.setup_indv(indv_id)
+
+        # Check if XF GUI instance is open, if not open one
         await self.persistent_xf()
 
-        indv = indv_genes.id_
+        # Parse genes to be in json format
         json_str = await self.to_xf_readable(indv_genes)
 
-        self.sim_setup(indv, indv_dir, json_str)
+        # Create setup json file for XF instance to read in then setup simulation and antenna
+        self.sim_setup(indv_id, indv_dir, json_str)
 
-        await self.sim_job(indv)
+        # Submit and wait for a simulation job for antenna performance
+        await self.sim_job(indv_id)
 
-        self.sim_output(indv, indv_dir)
+        # Output data files for XFdtd for analysis
+        self.sim_output(indv_id, indv_dir)
+
+        return indv_dir / "uan_files"
+
+    def setup_indv(self, indv_id: int) -> Path:
+        """
+        Creates and sets up individuals directory where data will be stored.
+
+        Args:
+            indv_id (int): individual id
+
+        Returns:
+            indv_dir
+
+        """
+        # TODO: Is this where individual data should be stored?
+        indv_dir = self.run_dir / str(indv_id)
+        uan_dir = indv_dir / "uan_files"
+
+        if not Path.exists(indv_dir):
+            Path.mkdir(indv_dir, parents=True)
+        if not Path.exists(uan_dir):
+            Path.mkdir(uan_dir, parents=True)
+
+        return indv_dir
 
     def run_xfdtd(self, persistent_dir: Path) -> None:
         """
@@ -85,11 +119,21 @@ class XFdtdSim:
             persistent_dir (Path): Path to location of persistent file stored per run
 
         """
-        persistent_xmacro = persistent_dir / "persistent_XF.xmacro"  # TODO: Do we want this in the run directory?
+        persistent_xmacro = persistent_dir / "persistent_XF.xmacro"
+        project_path = Path(self.run_dir) / f"{self.run_dir.name}.xf"
 
-        js_files = ["xf_persistent.js", "xf_sim.js", "xf_geometry.js", "xf_feed.js", "xf_output.js"]
+        js_files = [
+            "xf_persistent.js",
+            "xf_sim_settings.js",
+            "xf_geometry.js",
+            "xf_feed.js",
+            "xf_output.js",
+        ]
         with open(persistent_xmacro, "w") as f:
-            f.write(f'App.saveCurrentProjectAs("{self.run_dir / self.cfg.run_name}");\n')
+            if not project_path.exists():
+                f.write(
+                    f'App.saveCurrentProjectAs("{self.run_dir}/{self.run_dir.name}.xf");\n'
+                )
             f.write(f'var xf_run_scripts = "{self.xf_run_scripts}";\n')
             for js in js_files:
                 js_path = self.xf_scripts / js
@@ -104,21 +148,35 @@ class XFdtdSim:
             f.write("App.quit();\n")
 
         xfdtd_path = shutil.which("xfdtd")
-        subprocess.Popen([xfdtd_path, str(self.xfproj), f"--execute-macro-script={persistent_xmacro}"])  # noqa: S603
+        subprocess.Popen(
+            [
+                xfdtd_path,
+                str(self.xfproj),
+                f"--execute-macro-script={persistent_xmacro}",
+            ]
+        )
 
-    async def to_xf_readable(self, indv_genes: any) -> str:
+    async def to_xf_readable(self, indv_genes: Genotype) -> None:
         """
         Convert genes to json format to allow for XFdtd input.
 
         Args:
-            indv_genes (ShapeIndividual): indv genes
+            indv_genes (Genotype): indv genes
 
         Returns:
             json_str (str): json formatted dictionary entry of genes needed for XF to build an individual
 
         """
-        # TODO: Change this to pull only needed genes from indv_genes? IDK if there will be anything requiring this
-        json_str = json.dumps(indv_genes, cls=NpEncoder, separators=(", ", ": "), indent=1)
+        indv_dict = {}
+        indv_dict["flare_length"] = indv_genes.flare_length
+        indv_dict["waveguide_height"] = indv_genes.waveguide_height
+        indv_dict["waveguide_length"] = indv_genes.waveguide_length
+        indv_dict["waveguide_width"] = indv_genes.waveguide_width
+        indv_dict["walls"] = indv_genes.walls
+
+        json_str = json.dumps(
+            indv_dict, cls=NpEncoder, separators=(", ", ": "), indent=1
+        )
 
         return json_str
 
@@ -152,16 +210,16 @@ class XFdtdSim:
             with open(setup_json, "w") as f:
                 f.write(json.dumps(setup_data, indent=4))
 
-            setup_done = self.xfproj / "Simulations" / f"{indv:06d}" / "status.dat"
+            setup_done = sim_dir / "status.dat"
             while True:
                 if setup_done.exists():
                     with open(setup_done) as f:
                         content = f.read()
                     if "Created" in content:
                         print(f"Simulation created for individual {indv}.")
+                        # Makes images go away????
                         setup_json.unlink()
                         break
-                time.sleep(1)
 
     async def sim_job(self, indv: int) -> None:
         """
@@ -172,33 +230,28 @@ class XFdtdSim:
 
         """
         sim_status = self._get_status_file(indv)
-
+        job_name = self.run_dir.name + str(indv)
         if sim_status.exists():
             print(f"Evaluation {indv} is complete!")
             return
 
-        running = await self._is_job_running(str(indv))
+        running = await self._is_job_running(self.run_dir.name + str(indv))
         if running:
             print(f"Evaluation {indv} is currently running!")
-            await self._wait_for_completion(str(indv), sim_status)
+            await self._wait_for_completion(job_name, sim_status)
             return
-
-        await self.wait_for_slot(self.cfg.xf_keys)
 
         print(f"Submitting XF job for indv {indv}!")
         await self._submit_job(indv)
-        await self._wait_for_completion(str(indv), sim_status)
+        await self._wait_for_completion(job_name, sim_status)
 
-    def sim_output(self, indv: int, indv_dir: Path) -> None:
+    def sim_output(self, indv_id: int, indv_dir: Path) -> None:
         """
         Outputs Antenna simulation data from XF simulation data.
 
         Args:
-            indv (int): Current indv
+            indv_id (int): Current indv
             indv_dir (Path): Path to directory for indv for output.
-
-        Returns:
-            Outputs UAN file for antenna gain + phase data and csv file with S11, VSWR, Impedance, etc. data.
 
         Raises:
             ValueError if output files are not able to be created.
@@ -207,11 +260,10 @@ class XFdtdSim:
         uan_dir = indv_dir / "uan_files"
         uan_dir.mkdir(parents=True, exist_ok=True)
 
-        out_json = self.xf_run_scripts / "output" / f"{indv}.json"
+        out_json = self.xf_run_scripts / "output" / f"{indv_id}.json"
         out_data = {
             "indv_dir": str(indv_dir),
-            "gaintype": self.cfg.gain_type,
-            "indv_num": indv,
+            "indv_num": indv_id,
             "num_freqs": self.num_freqs,
         }
         with open(out_json, "w") as f:
@@ -221,23 +273,37 @@ class XFdtdSim:
             num_files = len([f for f in uan_dir.iterdir() if f.is_file()])
 
             if num_files >= self.num_freqs:
-                print(f"Found {num_files} files for individual {indv}.")
+                print(f"Found {num_files} files for individual {indv_id}.")
                 out_json.unlink()
                 break
 
         # NOTE: We have outputs, removing the simulation data to save space
         # Without this XF projects get large, quickly with data that we don't need for evolution
-        # Keeping the simulation directory as to make sure that evaluations are properly kept track of for debugging in case issue.
-        sim_dir = self.xfproj / "Simulations" / f"{indv:06d}"
-        for item in sim_dir.iterdir():
-            if item.is_dir():
-                shutil.rmtree(item)
-            else:
-                item.unlink()
+        sim_dir = self.xfproj / "Simulations" / f"{indv_id:06d}"
+        # Try to robustly rmtree with retries
+        retries = 10
+        delay = 0.5
+        for attempt in range(retries):
+            try:
+                shutil.rmtree(sim_dir)
+                break
+            except OSError as e:
+                if attempt < retries - 1:
+                    time.sleep(delay * (attempt + 1))
+                else:
+                    raise OSError("Failed to sim delete") from e
 
     def _get_status_file(self, indv: int) -> Path:
         """Returns path to xfdtd status file."""
-        return self.xfproj / "Simulations" / f"{indv:06d}" / "Run0001" / "output" / "status" / "runstatus.complete"
+        return (
+            self.xfproj
+            / "Simulations"
+            / f"{indv:06d}"
+            / "Run0001"
+            / "output"
+            / "status"
+            / "runstatus.complete"
+        )
 
     async def _is_job_running(self, job_name: str) -> bool:
         """Check if a job with this name is running in SLURM."""
@@ -262,7 +328,7 @@ class XFdtdSim:
     async def _submit_job(self, indv: int) -> None:
         """Submit a SLURM job for this simulation."""
         submit_script = self.xf_scripts / "xfdtd_sim.sh"
-        job_name = str(indv)
+        job_name = self.run_dir.name + str(indv)
 
         sim_dir = self.xfproj / "Simulations" / f"{indv:06d}"
         job_out_dir = self.run_dir / "slurm_logs"
@@ -282,27 +348,6 @@ class XFdtdSim:
 
         await asyncio.to_thread(subprocess.run, cmd, check=True)
 
-    async def jobs_running(self, user: str | None = None) -> int:
-        """Return number of jobs currently running or pending for the user."""
-        if user is None:
-            user = os.getenv("USER")
-        proc = await asyncio.create_subprocess_shell(
-            f"squeue -u {user} -h",
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        out, _ = await proc.communicate()
-        return len(out.decode().strip().splitlines())
-
-    async def wait_for_slot(self, xf_keys: int, user: str | None = None, poll: int = 10) -> None:
-        """Wait until the number of running jobs is below xf_keys."""
-        while True:
-            running = await self.jobs_running(user)
-            if running < xf_keys:
-                return
-            print(f"{running} jobs running, waiting for free slot...")
-            await asyncio.sleep(poll)
-
     async def persistent_xf(self) -> None:
         """Check if GUI is open, if it's not open with persistent XF script running."""
         async with self._xf_lock:
@@ -318,30 +363,28 @@ class NpEncoder(json.JSONEncoder):
     """Helper class for json conversion."""
 
     def default(self, obj: any) -> str:
-        """Properties needed for JSON conversion."""
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         return super().default(obj)
 
 
-def rmat_to_euler(rmat: np.ndarray) -> float:
-    """Converts a rotation matrix to euler angles."""
-    if rmat[2][0] != 1 and rmat[2][0] != -1:
-        pitch = -np.arcsin(rmat[2][0])
-        heading = np.arctan2(rmat[2][1] / np.cos(pitch), rmat[2][2] / np.cos(pitch))
-        roll = np.arctan2(rmat[1][0] / np.cos(pitch), rmat[0][0] / np.cos(pitch))
-    else:
-        roll = 0
-        if rmat[2][0] == -1:
-            pitch = np.pi / 2
-            heading = np.arctan2(rmat[0][1], rmat[0][2])
-        else:
-            pitch = -np.pi / 2
-            heading = np.arctan2(-rmat[0][1], -rmat[0][2])
-
-    return heading, pitch, roll
-
-
 def is_running(process_name: str) -> bool:
-    """Return True if a process with the given name is running."""
-    return any(proc.info["name"] == process_name for proc in psutil.process_iter(attrs=["name"]))
+    """Checks if process is running on current user."""
+    current_user = getpass.getuser().lower()
+    process_name = process_name.lower()
+
+    for proc in psutil.process_iter(attrs=["name", "exe", "username"]):
+        try:
+            name = (proc.info["name"] or "").lower()
+            exe = (proc.info["exe"] or "").lower()
+            user = (proc.info["username"] or "").lower()
+
+            if user != current_user:
+                continue
+
+            if name == process_name or exe.endswith(process_name):
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+
+    return False

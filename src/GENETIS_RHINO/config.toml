@@ -8,6 +8,14 @@ selection_scheme = "NSGAII"
 percent_no_ridge_at_start = 0.1  # the % of indiv generated w/ no ridge when
                                  # generating a new starting population
 
+### XFdtd Parameters ###
+xf_units = "cm"         # units for scaling geometry in XFdtd
+freq_start = 200        # Starting simulation frequency
+freq_end = 800          # Ending simulation frequency
+freq_step = 16.67       # Step size to take in frequency
+freq_scale = "MHz"      # units for scaling frequencies in XFdtd
+enable_sparams = true   # enable or disable sparams for S11 and other sets of data
+
 ### Individual Parameters ###
 
 # Horn Parameters

@@ -5,6 +5,7 @@ This module provides:
 - generate: randomly generates a new Genotype
 - mutate: mutates the Genotype
 """
+
 import random
 from typing import Optional
 
@@ -15,12 +16,15 @@ from src.GENETIS_RHINO.wall_pair import WallPair
 class Genotype:
     """Genotype class."""
 
-    def __init__(self, cfg: ParametersObject,
-                 flare_length: Optional[float] = None,
-                 waveguide_height: Optional[float] = None,
-                 waveguide_length: Optional[float] = None,
-                 waveguide_width: Optional[float] = None,
-                 walls: Optional[list] = None) -> None:
+    def __init__(
+        self,
+        cfg: ParametersObject,
+        flare_length: Optional[float] = None,
+        waveguide_height: Optional[float] = None,
+        waveguide_length: Optional[float] = None,
+        waveguide_width: Optional[float] = None,
+        walls: Optional[list] = None,
+    ) -> None:
         """
         Genotype Constructor.
 
@@ -54,9 +58,9 @@ class Genotype:
         self.MIN_WAVEGUIDE_LENGTH = float(cfg.MIN_WAVEGUIDE_LENGTH)
         self.MAX_WAVEGUIDE_LENGTH = float(cfg.MAX_WAVEGUIDE_LENGTH)
 
-        self.MIN_WAVEGUIDE_HEIGHT = float(cfg.MIN_WAVEGUIDE_HEIGHT) # cm;
+        self.MIN_WAVEGUIDE_HEIGHT = float(cfg.MIN_WAVEGUIDE_HEIGHT)  # cm;
         # inclusive -- func of min freq you care about picking up
-        self.MAX_WAVEGUIDE_HEIGHT = float(cfg.MAX_WAVEGUIDE_HEIGHT) # cm;
+        self.MAX_WAVEGUIDE_HEIGHT = float(cfg.MAX_WAVEGUIDE_HEIGHT)  # cm;
         # inclusive; # TODO also prevent being bigger than aperture smaller area
         # rectangle than waveguide
 
@@ -85,27 +89,21 @@ class Genotype:
         :rtype: Genotype
         """
         # generate valid random flare_length
-        flare_length = rand.uniform(self.MIN_FLARE_LENGTH,
-                                    self.MAX_FLARE_LENGTH)
-
+        flare_length = rand.uniform(self.MIN_FLARE_LENGTH, self.MAX_FLARE_LENGTH)
 
         # generate valid random waveguide_height
-        waveguide_height = rand.uniform(self.MIN_WAVEGUIDE_HEIGHT,
-                                         self.MAX_WAVEGUIDE_HEIGHT)
+        waveguide_height = rand.uniform(self.MIN_WAVEGUIDE_HEIGHT, self.MAX_WAVEGUIDE_HEIGHT)
 
         # generate valid random waveguide_length
-        waveguide_length = rand.uniform(self.MIN_WAVEGUIDE_LENGTH,
-                                         self.MAX_WAVEGUIDE_LENGTH)
+        waveguide_length = rand.uniform(self.MIN_WAVEGUIDE_LENGTH, self.MAX_WAVEGUIDE_LENGTH)
 
         # generate valid random waveguide_width
-        waveguide_width = rand.uniform(self.MIN_WAVEGUIDE_WIDTH,
-                                       self.MAX_WAVEGUIDE_WIDTH)
+        waveguide_width = rand.uniform(self.MIN_WAVEGUIDE_WIDTH, self.MAX_WAVEGUIDE_WIDTH)
 
         # generate list of walls with randomly generated values
         walls = WallPair(self.cfg).generate_walls_with_ridge(rand)
 
-        return Genotype(self.cfg, flare_length, waveguide_height,
-                        waveguide_length, waveguide_width, walls)
+        return Genotype(self.cfg, flare_length, waveguide_height, waveguide_length, waveguide_width, walls)
 
     def generate_without_ridge(self, rand: random.Random) -> "Genotype":
         """
@@ -119,27 +117,21 @@ class Genotype:
         :rtype: Genotype
         """
         # generate valid random flare_length
-        flare_length = rand.uniform(self.MIN_FLARE_LENGTH,
-                                    self.MAX_FLARE_LENGTH)
-
+        flare_length = rand.uniform(self.MIN_FLARE_LENGTH, self.MAX_FLARE_LENGTH)
 
         # generate valid random waveguide_height
-        waveguide_height = rand.uniform(self.MIN_WAVEGUIDE_HEIGHT,
-                                         self.MAX_WAVEGUIDE_HEIGHT)
+        waveguide_height = rand.uniform(self.MIN_WAVEGUIDE_HEIGHT, self.MAX_WAVEGUIDE_HEIGHT)
 
         # generate valid random waveguide_length
-        waveguide_length = rand.uniform(self.MIN_WAVEGUIDE_LENGTH,
-                                         self.MAX_WAVEGUIDE_LENGTH)
+        waveguide_length = rand.uniform(self.MIN_WAVEGUIDE_LENGTH, self.MAX_WAVEGUIDE_LENGTH)
 
         # generate valid random waveguide_width
-        waveguide_width = rand.uniform(self.MIN_WAVEGUIDE_WIDTH,
-                                       self.MAX_WAVEGUIDE_WIDTH)
+        waveguide_width = rand.uniform(self.MIN_WAVEGUIDE_WIDTH, self.MAX_WAVEGUIDE_WIDTH)
 
         # generate list of walls with randomly generated values
         walls = WallPair(self.cfg).generate_walls_without_ridge(rand)
 
-        return Genotype(self.cfg, flare_length, waveguide_height,
-                        waveguide_length, waveguide_width, walls)
+        return Genotype(self.cfg, flare_length, waveguide_height, waveguide_length, waveguide_width, walls)
 
     def mutate(self, rand: random.Random) -> None:
         """
@@ -154,8 +146,7 @@ class Genotype:
         per_site_mut_rate = float(self.cfg.per_site_mut_rate)
         mut_effect_size = float(self.cfg.mut_effect_size)
 
-        core_genes = ["flare_length", "waveguide_height", "waveguide_length",
-                      "waveguide_width"]
+        core_genes = ["flare_length", "waveguide_height", "waveguide_length", "waveguide_width"]
 
         # Iterate over each gene in the Genotype
         for gene in core_genes:
@@ -164,8 +155,7 @@ class Genotype:
             if per_site_mut_rate >= rand.uniform(0, 1):
                 # flare_length gene
                 if gene == "flare_length":
-                    self.flare_length = self.flare_length + rand.gauss(0,
-                                                                  mut_effect_size)
+                    self.flare_length = self.flare_length + rand.gauss(0, mut_effect_size)
                     # if under min bound, set to min
                     self.flare_length = max(self.flare_length, self.MIN_FLARE_LENGTH)
                     # if over max bound, set to max
@@ -173,18 +163,15 @@ class Genotype:
 
                 # waveguide_height gene
                 elif gene == "waveguide_height":
-                    self.waveguide_height = (self.waveguide_height +
-                                             rand.gauss(0, mut_effect_size))
+                    self.waveguide_height = self.waveguide_height + rand.gauss(0, mut_effect_size)
                     # if under min bound, set to min
-                    self.waveguide_height = max(self.waveguide_height,
-                                                self.MIN_WAVEGUIDE_HEIGHT)
+                    self.waveguide_height = max(self.waveguide_height, self.MIN_WAVEGUIDE_HEIGHT)
                     # if over max bound, set to max
                     self.waveguide_height = min(self.waveguide_height, self.MAX_WAVEGUIDE_HEIGHT)
 
                 # waveguide_length gene
                 elif gene == "waveguide_length":
-                    self.waveguide_length = (self.waveguide_length +
-                                                rand.gauss(0, mut_effect_size))
+                    self.waveguide_length = self.waveguide_length + rand.gauss(0, mut_effect_size)
                     # if under min bound, set to min
                     self.waveguide_length = max(self.waveguide_length, self.MIN_WAVEGUIDE_LENGTH)
                     # if over max bound, set to max
@@ -192,8 +179,7 @@ class Genotype:
 
                 # waveguide_width gene
                 elif gene == "waveguide_width":
-                    self.waveguide_width = (self.waveguide_width +
-                                            rand.gauss(0, mut_effect_size))
+                    self.waveguide_width = self.waveguide_width + rand.gauss(0, mut_effect_size)
                     # if under min bound, set to min
                     self.waveguide_width = max(self.waveguide_width, self.MIN_WAVEGUIDE_WIDTH)
                     # if over max bound, set to max

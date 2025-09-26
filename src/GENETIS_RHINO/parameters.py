@@ -36,6 +36,7 @@ known_parameters = {
     "MAX_RIDGE_THICKNESS_BOTTOM": float,
 }
 
+
 class ParametersObject:
     """This class serves as the interface for all parameters. Use ParametersObject.param_name to access a stored value."""
 
@@ -59,7 +60,6 @@ class ParametersObject:
         for param_name in known_parameters:
             if param_name not in self._parameters:
                 raise ValueError(f"Parameter {param_name} not set!")
-
 
     def __getattr__(self, name: str) -> str:
         """Get a requested attribute."""
