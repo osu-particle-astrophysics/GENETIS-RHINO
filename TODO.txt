@@ -1,0 +1,35 @@
+-------------
+** PHASE 1 **
+-------------
+HANDOFF FROM KATE TO MAX:
+
+[ ] Look at error in parameters.py
+
+[ ] Look at Warnings in:
+    1. Analysis.py (ask Evan if unsure)
+    2. Evolver.py
+    3. fitness_functions.py (ask Emily if unsure)
+    4. ga_selectors.py
+
+[ ] Fix failing test_fitness_functions.py (broke when we turned code into
+            python package, so it's something to do with that file structure
+            change)
+
+[ ] Confirm config.toml settings that are flagged with TODO's (the rest were
+already confirmed during meetings)
+
+[ ] Confirm we are collecting all of the data necessary and nothing more.
+
+
+-------------
+** PHASE 2 **
+-------------
+CODE:
+[ ] MAX - Switch from dummy fitness function to real fitness function
+[ ] EMILY - phylogeny tracking
+[ ] KATE - Code simple crossover
+
+TESTING:
+[ ] MAX - test integration with XFdtd
+[ ] EMILY - test phylogeny tracking
+[ ] KATE - test simple crossover
