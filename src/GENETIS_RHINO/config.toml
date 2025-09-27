@@ -9,6 +9,7 @@ percent_no_ridge_at_start = 0.1  # the % of indiv generated w/ no ridge when
                                  # generating a new starting population
 
 ### XFdtd Parameters ###
+xf_keys = 1             # number of XFdtd keys to use for a run
 xf_units = "cm"         # units for scaling geometry in XFdtd
 freq_start = 200        # Starting simulation frequency
 freq_end = 800          # Ending simulation frequency

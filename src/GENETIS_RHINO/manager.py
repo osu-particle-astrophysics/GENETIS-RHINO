@@ -1,7 +1,9 @@
 """Class for managing the evolution of a population of antennas."""
 
+import asyncio
 import pathlib
 import random
+import shutil
 
 from src.GENETIS_RHINO.analysis import Analysis
 from src.GENETIS_RHINO.evolver import NSGA2
@@ -9,6 +11,7 @@ from src.GENETIS_RHINO.genotype import Genotype
 from src.GENETIS_RHINO.parameters import ParametersObject
 from src.GENETIS_RHINO.phenotype import Phenotype
 from src.xfdtd.xf_job import XFdtdSim
+from src.xfdtd.antenna_fitness import antenna_performance
 
 
 class Manager:
@@ -47,17 +50,13 @@ class Manager:
         make_without_ridge = int(pop_size * float(cfg.percent_no_ridge_at_start))
         make_with_ridge = pop_size - make_without_ridge
 
-        # Initialized XFdtd class
-        run_dir = ""  # TODO: Formalize this
-        xf = XFdtdSim(run_dir, cfg)
-
         # generate starting individuals with ridges
         for individual in range(make_with_ridge):
             # create new random Genotype with 4 sides
             g = Genotype(cfg).generate_with_ridge(self.rand)
 
             # assign phenotype to genotype
-            p = Phenotype(g, xf, str(individual), "None", initial_generation_num)
+            p = Phenotype(g, str(individual), "None", initial_generation_num)
 
             # append phenotype to population
             self.population.append(p)
@@ -72,6 +71,26 @@ class Manager:
 
             # append phenotype to population
             self.population.append(p)
+
+        # Simulate Individuals in XFdtd
+        run_dir = pathlib.Path("/users/PAS1977/jacobweiler/GENETIS/test_repos/GENETIS-RHINO/test_run1")  # TODO: Formalize this
+        # Jacob - Doing this for testing
+        if run_dir.exists() and run_dir.is_dir():
+            shutil.rmtree(run_dir)  # remove directory and all its contents
+        run_dir.mkdir(parents=True, exist_ok=True)
+
+        # Define async function to run simulations with concurrency limit
+        async def run_all_simulations():
+            sem = asyncio.Semaphore(cfg.xf_keys)
+
+            async def simulate(indv: Phenotype):
+                async with sem:
+                    await antenna_performance(run_dir, cfg, indv)
+
+            await asyncio.gather(*(simulate(indv) for indv in self.population))
+
+        # Run all simulations in one event loop
+        asyncio.run(run_all_simulations())
 
     def evolve_one_gen(self, generation_num: int) -> None:
         """

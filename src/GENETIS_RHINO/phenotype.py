@@ -4,10 +4,8 @@ import copy
 import random
 from typing import Optional
 
-from src.xfdtd.xf_job import XFdtdSim
-from src.GENETIS_RHINO.fitness_functions import calculate_fitnesses
-from src.GENETIS_RHINO.genotype import Genotype
 from src.GENETIS_RHINO.dummy_fitness_func import DummyFitnessFunc
+from src.GENETIS_RHINO.genotype import Genotype
 
 
 class Phenotype:
@@ -27,9 +25,7 @@ class Phenotype:
     :type generation_created: int, optional
     """
 
-    def __init__(
-        self, genotype: Genotype, xf: XFdtdSim, indiv_id: Optional[str], parent1_id: Optional[str], generation_created: Optional[int]
-    ) -> None:
+    def __init__(self, genotype: Genotype, indiv_id: Optional[str], parent1_id: Optional[str], generation_created: Optional[int]) -> None:
         """
         Phenotype constructor.
 
@@ -46,13 +42,12 @@ class Phenotype:
         :rtype: None
         """
         self.genotype = genotype
-        self.xf = xf
         self.indiv_id = indiv_id
         self.parent1_id = parent1_id
         self.generation_created = generation_created
-        self.fitness_scores = DummyFitnessFunc(genotype).get_fitness_scores()
+        self.fitness_scores = {}
 
-    async def make_offspring(self, new_id: str, generation_num: int, rand: random.Random) -> "Phenotype":
+    def make_offspring(self, new_id: str, generation_num: int, rand: random.Random) -> "Phenotype":
         """
         Make offspring.
 
@@ -77,10 +72,7 @@ class Phenotype:
         # mutate offspring
         offspring.genotype.mutate(rand)
 
-        # simulate antenna in XFdtd
-        indv_uan_dir = await self.xf.antenna_sim(int(new_id), offspring.genotype)
-
-        # calc new fitness score
-        offspring.fitness_scores = calculate_fitnesses(indv_uan_dir)
+        # TODO: Update this to actual XFdtd sim + fitness calc
+        offspring.fitness_scores = DummyFitnessFunc(offspring.genotype).get_fitness_scores()
 
         return offspring

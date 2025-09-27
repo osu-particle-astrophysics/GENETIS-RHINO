@@ -1,7 +1,13 @@
-// Functions related to feed building in XFdtd
-function create_feeds(h_or_v, x, y, Height, L) {
-  // TODO: Change this to read in RHINO Variables
-
+function create_feeds(setup_data) {
+  // Creates feeds in waveguide
+  if (setup_data.units == " cm") {
+    var unit_scale = 0.01;
+  }
+  var indvdata = setup_data.indvdata;
+  var half_wg_height =
+    (MathUtils.evaluate(indvdata.waveguide_height) / 2) * unit_scale;
+  var wg_width = MathUtils.evaluate(indvdata.waveguide_width) * unit_scale;
+  var wg_length = MathUtils.evaluate(indvdata.waveguide_length) * unit_scale;
   // Here we will create our waveform, create our circuit component definition for the feed, and create
   // a CircuitComponent that will attach those to our current geometry.
   var waveformList = App.getActiveProject().getWaveformList();
@@ -56,27 +62,9 @@ function create_feeds(h_or_v, x, y, Height, L) {
 
   component1.setAsPort(true);
   //component2.setAsPort( true );
-  // Define the endpoints of this feed - these are defined in world position, but you can also attach them to edges, faces, etc.
-  /*	if(h_or_v == 0) // 0 for h, 1 for v
-	{
-		var coordinate1 = new CoordinateSystemPosition( -x - L + y, 0, Height);
-		var coordinate2 = new CoordinateSystemPosition( x + L - y, 0, Height);
-	}
-	else
-	{
-		var coordinate1 = new CoordinateSystemPosition( 0, -x - L + y, Height);
-    	var coordinate2 = new CoordinateSystemPosition( 0, x + L - y, Height);
-		
-	}
-*/
-  if (h_or_v == 0) {
-    // 0 for h, 1 for v
-    var coordinate1 = new CoordinateSystemPosition(-x, 0, Height);
-    var coordinate2 = new CoordinateSystemPosition(x, 0, Height);
-  } else {
-    var coordinate1 = new CoordinateSystemPosition(0, -x, Height);
-    var coordinate2 = new CoordinateSystemPosition(0, x, Height);
-  }
+  var coordinate1 = new CoordinateSystemPosition(-wg_width, 0, -half_wg_height);
+  var coordinate2 = new CoordinateSystemPosition(wg_width, 0, -half_wg_height);
+
   //var coordinate3 = new CoordinateSystemPosition( 0, -x2, height);
   //var coordinate4 = new CoordinateSystemPosition( 0, x2, height);
   component1.setCircuitComponentDefinition(feed1);

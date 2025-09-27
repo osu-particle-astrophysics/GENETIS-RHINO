@@ -1,227 +1,180 @@
-var sym_count = 0;
-var num_ridges = 4; // either 2 or 4
+// Version of RHINO geometry script for testing
+// TODO: Add Ridges
+// TODO: Where in waveguides do feeds need to be placed? Currently assuming halfway
+// TODO: Do we need two feeds for horizontal and vertical polarizations?
+// TODO: Is flare being constructed correctly? I don't totally understand the different angles for wall pairs.
+// TODO: Isn't this constructing an Antenna 2x as big as wanted?
+// TODO: Is length defined as the y direction and width the x direction?
 
-// Order of genes:
-// S, H, x0, y0, xf, yf, zf, beta
-var Tau = 0.26; // Normalized parametric time--no good reason to be 0.26, but it's fine
+// XFdtd functions related to building antenna geometry
 
-var height1 = 0.01; // Where we place the second power source; needs to not intersect the first one!
-var height2 = 0.06; // Where we place the second power source; needs to not intersect the first one!
-
-// Lists to hold the genes
-// Potential genes:
-// Number of side lengths (start with fixing at 2), number of wall sections, side length dimensions, opening angle(s), full height, waveguide depth, source height (in waveguide), ridge dimensions, additional wall parameters (new opening angles, height)
-
-/* Genes for wall pairs
-		:param angle: The angle of the wall pair. Must be between 0 and 90
-        degrees. Defaults to None.
-        :type angle: float, optional
-        :param ridge_height: The flare_height of the ridge as a percentage of the
-        total horn flare_height. Starts from bottom of horn. Must be between 0%
-        and 100%(inclusive).
-        :type ridge_height: float, optional
-        :param ridge_width_top: The width of the ridge at the top of the horn.
-        Must be between 0 cm and 100 cm (inclusive).
-        :type ridge_width_top: float, optional
-        :param ridge_width_bottom: The width of the ridge at the bottom of
-        the .
-        Must be between 0 cm and 100 cm (inclusive).
-        :type ridge_width_bottom: float, optional
-        :param ridge_thickness_top: The thickness of the ridge. Must be
-        between 0 cm
-        and 100 cm (inclusive).
-        :type ridge_thickness_top: float, optional
-        :param ridge_thickness_bottom: The thickness of the ridge at the
-        bottom of the . Must be between 0 cm and 100 cm (inclusive).
-        :type ridge_thickness_bottom: float, optional
-        :rtype: None
-
-		self.has_ridge = False
-        self.angle = angle
-        :param flare_length: The length of the antenna's flare
-        :type flare_length: float, optional
-        :param waveguide_height: The flare_height of the waveguide.
-        :type waveguide_height: float, optional
-        :param waveguide_length: The length of the waveguide.
-        :type waveguide_length: float, optional
-        :param waveguide_width: The length of the waveguide.
-        :type waveguide_width: float, optional
-        :param walls: A list of WallPair objects that comprise the walls of the
-        antenna.
-
-*/
-
-/* Wall Genes */
-var num_walls = [];
-var angle1 = [];
-var angle2 = [];
-var wall_height1 = [];
-var wall_height2 = [];
-var wall_width1 = [];
-var wall_length1 = [];
-var wall_width2 = [];
-var wall_length2 = [];
-
-/* Ridge Genes */
-var has_ridge = [];
-var ridge_height = [];
-var ridge_width_top = [];
-var ridge_width_bottom = [];
-var ridge_thickness_top = [];
-var ridge_thickness_bottom = [];
-
-/* Waveguide Genes*/
-var waveguide_depth = [];
-
-/* Original Genes */
-
-var S = []; // Side length of bottom of antenna
-//var m=[];
-var H = []; // Height of antenna
-var X0 = []; // distance from center of ridges at bottom // previously 0.04
-var Y0 = []; // (half) width of ridges at bottom // previously 0.04
-var Z0 = []; // initial height of ridges (0 always for now)
-var Xf = []; // final distance from center of curve of ridges at max height
-var Yf = []; // final width of ridges at max height
-var Zf = []; // max height of ridges
-var Beta = []; // curvature of ridges
-var L = []; // (half) width of minor length of trapezoid extrude
-var h = []; // "height" of trapezoid extrude (in x-y plane; must be < x0)
-
-for (var i = indiv - 1; i < NPOP; i++) {
-  /* Original */
-  var s = S[i];
-  var ah = H[i];
-  var x0 = X0[i];
-  var y0 = Y0[i];
-  var z0 = 0;
-  var xf = s; // By constraint
-  var yf = Yf[i];
-  var zf = Zf[i];
-  var beta = Beta[i];
-  var l = L[i];
-  var th = h[i];
-  var m = 1; // Adjust this to read in the angle from the csv and convert to slope
-  var d = 0.03;
-
-  /* RHINO */
-  var N = num_walls[i];
-  var s1 = wall_length1[i];
-  var s2 = wall_length2[i];
-  var h1 = wall_height1[i];
-  var h2 = wall_height2[i];
-  var m1 = Math.tan((angle1[i] * Math.PI) / 180);
-  var m2 = Math.tan((angle2[i] * Math.PI) / 180);
-  /* Wall Genes */
-  var ridge = has_ridge[i];
-  var rh1 = has_ridge[i];
-  var rwt = ridge_width_top[i];
-  var rwb = ridge_width_bottom[i];
-  var rtt = ridge_thickness_top[i];
-  var rtb = ridge_thickness_bottom[i];
-  /* Waveguide */
-  var wgd = waveguide_depth[i];
-
-  // Function calls
-  // We do it twice, first for horizontal source then for vertical
-  for (var k = 0; k <= sym_count; k++) {
-    if (k == 0) {
-      height = -height1;
-    } else {
-      height = -height2;
-    }
-    T = (Tau / (Math.exp(zf / beta) - 1)) * (Math.exp(height / beta) - 1);
-    X = 1 * x0 + ((zf - x0) / Tau) * T; // Multiply x0 by 1 because otherwise it doesn't know it's a number lol
-
-    //l = (x0-y0)/4; //arbitrary
-
-    build_waveguide(1 * s1, 1 * s1, 1 * s1, -1 * wgd);
-
-    build_walls(s1, m1, h1, 0);
-    if (N == 1) {
-      build_walls(s2, m2, 1 * h2, 1 * ah);
-    }
-  }
-}
-
-function build_walls(S, m, H, z0) {
+function build_flare(setup_data) {
   // Makes the outer walls of the horn antenna
-  // S is the side length of the bottom of the wall
-  // m is the coefficient for the linear function the walls extrude according to (currently set to 1)
-  // H is the final height of the walls
-
-  // Make the edges to define the square
-  var edge1 = Line(new Cartesian3D(-S, -S, 0), new Cartesian3D(-S, S, 0));
-  var edge2 = Line(new Cartesian3D(-S, S, 0), new Cartesian3D(S, S, 0));
-  var edge3 = Line(new Cartesian3D(S, S, 0), new Cartesian3D(S, -S, 0));
-  var edge4 = Line(new Cartesian3D(S, -S, 0), new Cartesian3D(-S, -S, 0));
+  if (setup_data.units == " cm") {
+    var unit_scale = 0.01;
+  }
+  var indvdata = setup_data.indvdata;
+  var wg_length = MathUtils.evaluate(indvdata.waveguide_length) * unit_scale;
+  var wg_width = MathUtils.evaluate(indvdata.waveguide_width) * unit_scale;
+  var wall0_slope = Math.tan(
+    (MathUtils.evaluate(indvdata.wall_pair0.angle) * Math.PI) / 180
+  );
+  if (indvdata.wall_pair1.angle != null) {
+    var wall1_slope = Math.tan(
+      (MathUtils.evaluate(indvdata.wall_pair1.angle) * Math.PI) / 180
+    );
+  } else {
+    var wall1_slope = wall0_slope;
+  }
+  var flare_height = MathUtils.evaluate(indvdata.flare_length) * unit_scale;
+  Output.println(wall0_slope);
+  Output.println(wall1_slope);
+  // Edge definitions
+  var edge1 = Line(
+    new Cartesian3D(-wg_width, -wg_length, 0),
+    new Cartesian3D(-wg_width, wg_length, 0)
+  );
+  var edge2 = Line(
+    new Cartesian3D(-wg_width, wg_length, 0),
+    new Cartesian3D(wg_width, wg_length, 0)
+  );
+  var edge3 = Line(
+    new Cartesian3D(wg_width, wg_length, 0),
+    new Cartesian3D(wg_width, -wg_length, 0)
+  );
+  var edge4 = Line(
+    new Cartesian3D(wg_width, -wg_length, 0),
+    new Cartesian3D(-wg_width, -wg_length, 0)
+  );
 
   // Declare sketches to be made from the edges
-  var wallSegment = new Sketch();
-  var bottomSegment = new Sketch();
-  wallSegment.addEdge(edge1);
-  wallSegment.addEdge(edge2);
-  wallSegment.addEdge(edge3);
-  wallSegment.addEdge(edge4);
-
-  bottomSegment.addEdge(edge1);
-  bottomSegment.addEdge(edge2);
-  bottomSegment.addEdge(edge3);
-  bottomSegment.addEdge(edge4);
-
-  // Let's start by making the bottom
-  var bottomCover = new Cover(bottomSegment);
-  var bottomRecipe = new Recipe();
-  bottomRecipe.append(bottomCover);
-  var bottomModel = new Model();
-  bottomModel.setRecipe(bottomRecipe);
-  // Add the surface
-  //var bottom = App.getActiveProject().getGeometryAssembly().append(bottomModel);
-  //bottom.name = "Bottom square";
+  var flare_sketch = new Sketch();
+  flare_sketch.addEdges([edge1, edge2, edge3, edge4]);
 
   // Now we need to extrude the edges to get height
-  var walls = new Extrude(wallSegment, H); // Makes an Extrude
-  var wallOptions = walls.getOptions(); // Gives the possible options for
+  var wall_pair0 = new Extrude(flare_sketch, flare_height); // Makes an Extrude
+  var wall_pair1 = new Extrude(flare_sketch, flare_height);
+  var wall_pair0_options = wall_pair0.getOptions(); // Gives the possible options for
+  var wall_pair1_options = wall_pair1.getOptions();
   // We will use the draft law option to extrude linearly
-  wallOptions.draftOption = SweepOptions.DraftLaw; // allows for draftlaw
-  wallOptions.draftLaw = "(" + m + "*x)"; // Set the expression for the extrude
-  wallOptions.draftOption = 4; // 4 indicates we use draftlaw
+  wall_pair0_options.draftOption = SweepOptions.DraftLaw; // allows for draftlaw
+  wall_pair1_options.draftOption = SweepOptions.DraftLaw;
+  wall_pair0_options.draftLaw = "(" + wall0_slope + "*x)"; // Set the expression for the extrude
+  wall_pair1_options.draftLaw = "(" + wall1_slope + "*x)";
+  wall_pair0_options.draftOption = 4; // 4 indicates we use draftlaw
+  wall_pair1_options.draftOption = 4;
   //Walter - Change the gap type to Extended to get the desired shape
-  wallOptions.gapType = SweepOptions.Extended; // I actually don't like this when we have x^2, but it doesn't do much for just x
+  wall_pair0_options.gapType = SweepOptions.Extended; // I actually don't like this when we have x^2, but it doesn't do much for just x
+  wall_pair1_options.gapType = SweepOptions.Extended;
   //Walter - Create a shell instead of a solid part
-  wallOptions.createSolid = false; // This way the shape isn't filled in
-  walls.setOptions(wallOptions); // Sets the settings we assigned above
+  wall_pair0_options.createSolid = false; // This way the shape isn't filled in
+  wall_pair1_options.createSolid = false;
+  wall_pair0.setOptions(wall_pair0_options); // Sets the settings we assigned above
+  wall_pair1.setOptions(wall_pair1_options);
 
   // Make a recipe for a model
-  var wallRecipe = new Recipe();
-  wallRecipe.append(walls);
-  var wallModel = new Model();
-  wallModel.setRecipe(wallRecipe);
-  wallModel.name = "Outer Walls";
-  //wallModel.getCoordinateSystem().translate(new Cartesian3D(0,0,0));	// Makes the model start at the origin
-  wallModel.getCoordinateSystem().translate(new Cartesian3D(0, 0, z0)); // Makes the model start at the origin
-  // Set the material for these parts
-  var wallProject = App.getActiveProject()
-    .getGeometryAssembly()
-    .append(wallModel); // Adds the model to the project
-  var pecMaterial = App.getActiveProject().getMaterialList().getMaterial("PEC"); // Makes the material available
-  App.getActiveProject().setMaterial(wallProject, pecMaterial); // Sets the material
-  //App.getActiveProject().setMaterial( bottom, pecMaterial );						// Sets the material
-} // end buil_walls
+  var wall_pair0_recipe = new Recipe();
+  wall_pair0_recipe.append(wall_pair0);
+  var wall_pair0_model = new Model();
+  wall_pair0_model.setRecipe(wall_pair0_recipe);
+  wall_pair0_model.name = "Wall Pair 0 Flare";
+  wall_pair0_model.getCoordinateSystem().translate(new Cartesian3D(0, 0, 0)); // Makes the model start at the origin
+  var wall_pair1_recipe = new Recipe();
+  wall_pair1_recipe.append(wall_pair0);
+  var wall_pair1_model = new Model();
+  wall_pair1_model.setRecipe(wall_pair0_recipe);
+  wall_pair1_model.name = "Wall Pair 1 Flare";
+  wall_pair1_model.getCoordinateSystem().translate(new Cartesian3D(0, 0, 0)); // Makes the model start at the origin
 
+  // Set the material for these parts
+  var flare_project = App.getActiveProject()
+    .getGeometryAssembly()
+    .append(wall_pair0_model); // Adds the model to the project
+  var pec_material = App.getActiveProject()
+    .getMaterialList()
+    .getMaterial("PEC");
+  App.getActiveProject().setMaterial(flare_project, pec_material);
+  var flare_project = App.getActiveProject()
+    .getGeometryAssembly()
+    .append(wall_pair1_model);
+  App.getActiveProject().setMaterial(flare_project, pec_material);
+}
+
+function build_waveguide(setup_data) {
+  // Make a waveguide
+  if (setup_data.units == " cm") {
+    var unit_scale = 0.01;
+  }
+  var indvdata = setup_data.indvdata;
+  var wg_length = MathUtils.evaluate(indvdata.waveguide_length) * unit_scale;
+  var wg_width = MathUtils.evaluate(indvdata.waveguide_width) * unit_scale;
+  var wg_height = MathUtils.evaluate(indvdata.waveguide_height) * unit_scale;
+  // Make the edges to define the square
+  var edge1 = Line(
+    new Cartesian3D(-wg_width, -wg_length, 0),
+    new Cartesian3D(-wg_width, wg_length, 0)
+  );
+  var edge2 = Line(
+    new Cartesian3D(-wg_width, wg_length, 0),
+    new Cartesian3D(wg_width, wg_length, 0)
+  );
+  var edge3 = Line(
+    new Cartesian3D(wg_width, wg_length, 0),
+    new Cartesian3D(wg_width, -wg_length, 0)
+  );
+  var edge4 = Line(
+    new Cartesian3D(wg_width, -wg_length, 0),
+    new Cartesian3D(-wg_width, -wg_length, 0)
+  );
+
+  // Declare sketches to be made from the edges
+  var wall_sketch = new Sketch();
+  wall_sketch.addEdges([edge1, edge2, edge3, edge4]);
+
+  // Now we need to extrude the edges to get height
+  var wall_extrude = new Extrude(wall_sketch, -wg_height); // Makes an Extrude
+  var wall_options = wall_extrude.getOptions(); // Gives the possible options for
+  // We will use the draft law option to extrude linearly
+  wall_options.draftOption = SweepOptions.DraftLaw; // allows for draftlaw
+  wall_options.draftLaw = "(-1)"; // Set the expression for the extrude
+  wall_options.draftOption = 4; // 4 indicates we use draftlaw
+  //Walter - Change the gap type to Extended to get the desired shape
+  wall_options.gapType = SweepOptions.Extended; // I actually don't like this when we have x^2, but it doesn't do much for just x
+  //Walter - Create a shell instead of a solid part
+  wall_options.createSolid = false; // This way the shape isn't filled in
+  wall_extrude.setOptions(wall_options); // Sets the settings we assigned above
+
+  // Make a recipe for a model
+  var wall_recipe = new Recipe();
+  wall_recipe.append(wall_extrude);
+  var wall_model = new Model();
+  wall_model.setRecipe(wall_recipe);
+  wall_model.name = "Waveguide";
+  wall_model.getCoordinateSystem().translate(new Cartesian3D(0, 0, 0)); // Makes the model start at the origin
+
+  // Set the material for these parts
+  var wall_project = App.getActiveProject()
+    .getGeometryAssembly()
+    .append(wall_model); // Adds the model to the project
+  var pec_material = App.getActiveProject()
+    .getMaterialList()
+    .getMaterial("PEC");
+  App.getActiveProject().setMaterial(wall_project, pec_material);
+}
+
+// Builds the ridges
+// Here are the arguments, which are primarily used when making the LawEdges
+// Bottom x: distance from center
+// Bottom y: distance from center
+// Bottom z: distance from center (keep to 0)
+// Top x: distance from center
+// Top y: distance from center
+// Top z: distance from center
+// tau: Arbitrary time limit used for the parametric curves (the ridge shapes)
+// beta: determines the curvature of the ridges
+// S: Side length of bottom of walls
+// m: Slope of walls (currently set to 1)
 function build_ridges(x_0, y_0, z_0, x_f, y_f, z_f, tau, beta, S, m) {
-  // Builds the ridges
-  // Here are the arguments, which are primarily used when making the LawEdges
-  // Bottom x: distance from center
-  // Bottom y: distance from center
-  // Bottom z: distance from center (keep to 0)
-  // Top x: distance from center
-  // Top y: distance from center
-  // Top z: distance from center
-  // tau: Arbitrary time limit used for the parametric curves (the ridge shapes)
-  // beta: determines the curvature of the ridges
-  // S: Side length of bottom of walls
-  // m: Slope of walls (currently set to 1)
   // Curves (Z is logarithmic in t)
   var Log1 = new LawEdge(
     "" + x_0 + " + (" + z_f + "-" + x_0 + ")/" + tau + "*u",
@@ -414,158 +367,4 @@ function build_ridges(x_0, y_0, z_0, x_f, y_f, z_f, tau, beta, S, m) {
     Output.println(assembly.at(x));
     App.getActiveProject().setMaterial(assembly.at(x), pecMaterial);
   }
-}
-
-function build_waveguide(S, D) {
-  // Make a waveguide
-  // D for "depdth"
-  // Make the edges to define the square
-  var edge1 = Line(new Cartesian3D(-S, -S, 0), new Cartesian3D(-S, S, 0));
-  var edge2 = Line(new Cartesian3D(-S, S, 0), new Cartesian3D(S, S, 0));
-  var edge3 = Line(new Cartesian3D(S, S, 0), new Cartesian3D(S, -S, 0));
-  var edge4 = Line(new Cartesian3D(S, -S, 0), new Cartesian3D(-S, -S, 0));
-
-  // Declare sketches to be made from the edges
-  var wallSegment = new Sketch();
-  var bottomSegment = new Sketch();
-  wallSegment.addEdge(edge1);
-  wallSegment.addEdge(edge2);
-  wallSegment.addEdge(edge3);
-  wallSegment.addEdge(edge4);
-  bottomSegment.addEdge(edge1);
-  bottomSegment.addEdge(edge2);
-  bottomSegment.addEdge(edge3);
-  bottomSegment.addEdge(edge4);
-
-  // Let's start by making the bottom
-  var bottomCover = new Cover(bottomSegment);
-  var bottomRecipe = new Recipe();
-  bottomRecipe.append(bottomCover);
-  var bottomModel = new Model();
-  bottomModel.setRecipe(bottomRecipe);
-  // Add the surface
-  //var bottom = App.getActiveProject().getGeometryAssembly().append(bottomModel);
-  //bottom.name = "Bottom square";
-
-  // Now we need to extrude the edges to get height
-  var walls = new Extrude(wallSegment, D); // Makes an Extrude
-  var wallOptions = walls.getOptions(); // Gives the possible options for
-  // We will use the draft law option to extrude linearly
-  wallOptions.draftOption = SweepOptions.DraftLaw; // allows for draftlaw
-  wallOptions.draftLaw = "(-1)"; // Set the expression for the extrude
-  wallOptions.draftOption = 4; // 4 indicates we use draftlaw
-  //Walter - Change the gap type to Extended to get the desired shape
-  wallOptions.gapType = SweepOptions.Extended; // I actually don't like this when we have x^2, but it doesn't do much for just x
-  //Walter - Create a shell instead of a solid part
-  wallOptions.createSolid = false; // This way the shape isn't filled in
-  walls.setOptions(wallOptions); // Sets the settings we assigned above
-
-  // Make a recipe for a model
-  var wallRecipe = new Recipe();
-  wallRecipe.append(walls);
-  var wallModel = new Model();
-  wallModel.setRecipe(wallRecipe);
-  wallModel.name = "Outer Walls";
-  wallModel.getCoordinateSystem().translate(new Cartesian3D(0, 0, 0)); // Makes the model start at the origin
-
-  // Set the material for these parts
-  var wallProject = App.getActiveProject()
-    .getGeometryAssembly()
-    .append(wallModel); // Adds the model to the project
-  var pecMaterial = App.getActiveProject().getMaterialList().getMaterial("PEC"); // Makes the material available
-  App.getActiveProject().setMaterial(wallProject, pecMaterial); // Sets the material
-}
-
-function extend_ridges_trapezoid(S, x_0, y_0, D, L, th) {
-  // New extensions but with trapezoid shapes
-  // We define L as the half length of the minor side of the trapezoid
-  // We want the trapezoid to be at 45 degrees from the major base, so we
-  //	say the height is y0 - L
-  // D for "depdth", L for "Length"
-  // Below works for example antenna at l = (x0-y0)/4
-  // Make the edges to define the square
-  var edge1 = Line(new Cartesian3D(-S, y_0, 0), new Cartesian3D(-x_0, y_0, 0)); // good
-  var diag1 = Line(
-    new Cartesian3D(-x_0, y_0, 0),
-    new Cartesian3D(-x_0 + th, L, 0)
-  ); // good
-  var edge5 = Line(
-    new Cartesian3D(-x_0 + th, L, 0),
-    new Cartesian3D(-x_0 + th, -L, 0)
-  ); // good
-  var diag2 = Line(
-    new Cartesian3D(-x_0 + th, -L, 0),
-    new Cartesian3D(-x_0, -y_0, 0)
-  ); // good
-  var edge3 = Line(
-    new Cartesian3D(-x_0, -y_0, 0),
-    new Cartesian3D(-S, -y_0, 0)
-  ); // good
-  var edge4 = Line(new Cartesian3D(-S, -y_0, 0), new Cartesian3D(-S, y_0, 0)); // good
-
-  // Declare sketches to be made from the edges
-  var wallSegment = new Sketch();
-  var bottomSegment = new Sketch();
-  wallSegment.addEdge(edge1);
-  //	wallSegment.addEdge(edge2);
-  wallSegment.addEdge(edge3);
-  wallSegment.addEdge(edge4);
-  wallSegment.addEdge(diag1);
-  wallSegment.addEdge(diag2);
-  wallSegment.addEdge(edge5);
-
-  bottomSegment.addEdge(edge1);
-  //	bottomSegment.addEdge(edge2);
-  bottomSegment.addEdge(edge3);
-  bottomSegment.addEdge(edge4);
-  bottomSegment.addEdge(diag1);
-  bottomSegment.addEdge(diag2);
-  bottomSegment.addEdge(edge5);
-
-  // Let's start by making the bottom
-  var bottomCover = new Cover(bottomSegment);
-  var bottomRecipe = new Recipe();
-  bottomRecipe.append(bottomCover);
-  var bottomModel = new Model();
-  bottomModel.setRecipe(bottomRecipe);
-  // Add the surface
-  //var bottom = App.getActiveProject().getGeometryAssembly().append(bottomModel);
-  //bottom.name = "Bottom square";
-
-  // Now we need to extrude the edges to get height
-  var walls = new Extrude(wallSegment, D); // Makes an Extrude
-  var wallOptions = walls.getOptions(); // Gives the possible options for
-  // We will use the draft law option to extrude linearly
-  wallOptions.draftOption = SweepOptions.DraftLaw; // allows for draftlaw
-  wallOptions.draftLaw = "(-1)"; // Set the expression for the extrude
-  wallOptions.draftOption = 4; // 4 indicates we use draftlaw
-  //Walter - Change the gap type to Extended to get the desired shape
-  wallOptions.gapType = SweepOptions.Extended; // I actually don't like this when we have x^2, but it doesn't do much for just x
-  //Walter - Create a shell instead of a solid part
-  wallOptions.createSolid = true; // This way the shape isn't filled in
-  walls.setOptions(wallOptions); // Sets the settings we assigned above
-
-  // Make elliptical pattern for extensions
-  var ePattern = new EllipticalPattern();
-  ePattern.setCenter(new CoordinateSystemPosition(0, 0, 0));
-  ePattern.setNormal(new CoordinateSystemDirection(0, 0, 1));
-  ePattern.setInstances(num_ridges);
-  ePattern.setRotated(true);
-
-  // Make a recipe for a model
-  var wallRecipe = new Recipe();
-  wallRecipe.append(walls);
-  wallRecipe.append(ePattern);
-  var wallModel = new Model();
-  wallModel.setRecipe(wallRecipe);
-  wallModel.name = "Outer Walls";
-  wallModel.getCoordinateSystem().translate(new Cartesian3D(0, 0, 0)); // Makes the model start at the origin
-
-  // Set the material for these parts
-  var wallProject = App.getActiveProject()
-    .getGeometryAssembly()
-    .append(wallModel); // Adds the model to the project
-  var pecMaterial = App.getActiveProject().getMaterialList().getMaterial("PEC"); // Makes the material available
-  App.getActiveProject().setMaterial(wallProject, pecMaterial); // Sets the material
-  //App.getActiveProject().setMaterial( bottom, pecMaterial );						// Sets the material
 }

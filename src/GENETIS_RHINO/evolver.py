@@ -39,8 +39,6 @@ class NSGA2(AbstractEvolver):
         offspring = []
         for i in range(pop_size):
             parent1 = ga_selectors.NSGATournament.select_one(population, rand)
-            # uncomment these lines for crossover
-            # parent2 = NSGATournament.select_one(population, rand)
             new_child_id = str(generation_num * pop_size + i)
             child = parent1.make_offspring(new_child_id, generation_num, rand)
             offspring.append(child)

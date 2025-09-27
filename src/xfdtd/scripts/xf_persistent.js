@@ -52,11 +52,11 @@ function xf_setup(setup_data) {
   if (sim_dir.exists()) {
     return;
   } else {
-    build_waveguide(1 * s1, 1 * s1, 1 * s1, -1 * wgd);
-    build_walls(s1, m1, h1, 0);
-    if (N == 1) {
-      build_walls(s2, m2, 1 * h2, 1 * ah);
-    }
+    create_pec();
+    // TODO: Add function call to build ridges
+    build_waveguide(setup_data);
+    build_flare(setup_data);
+    create_feeds(setup_data);
 
     create_grid(setup_data);
     create_sensors(setup_data);

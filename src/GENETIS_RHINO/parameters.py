@@ -6,6 +6,13 @@ except ModuleNotFoundError:
     from tomli import load
 
 known_parameters = {
+    "xf_keys": int,
+    "xf_units": str,
+    "freq_start": int,
+    "freq_end": int,
+    "freq_step": float,
+    "freq_scale": str,
+    "enable_sparams": bool,
     "random_num_seed": int,
     "population_size": int,
     "num_generations": int,

@@ -17,7 +17,6 @@ from src.GENETIS_RHINO.genotype import Genotype
 # TODO: If there is a way to automatically submit a VDI that would be awesome. You'd still need one to start a run since you have to press no on XFdtd
 # TODO: Adjust convergence settings to be less rigourous in precision
 
-# TODO: Have individuals wait if there are xf_keys # of indvs already simulating
 # TODO: Debug
 
 
@@ -172,7 +171,15 @@ class XFdtdSim:
         indv_dict["waveguide_height"] = indv_genes.waveguide_height
         indv_dict["waveguide_length"] = indv_genes.waveguide_length
         indv_dict["waveguide_width"] = indv_genes.waveguide_width
-        indv_dict["walls"] = indv_genes.walls
+        for i, wall_pair in enumerate(indv_genes.walls):
+            walls = {}
+            walls["angle"] = wall_pair.angle
+            walls["ridge_height"] = wall_pair.ridge_height
+            walls["ridge_width_top"] = wall_pair.ridge_width_top
+            walls["ridge_width_bottom"] = wall_pair.ridge_width_bottom
+            walls["ridge_thickness_top"] = wall_pair.ridge_thickness_top
+            walls["ridge_thickness_bottom"] = wall_pair.ridge_thickness_bottom
+            indv_dict[f"wall_pair{i}"] = walls
 
         json_str = json.dumps(
             indv_dict, cls=NpEncoder, separators=(", ", ": "), indent=1
@@ -180,7 +187,7 @@ class XFdtdSim:
 
         return json_str
 
-    def sim_setup(self, indv: int, indv_dir: Path, json_str: str) -> any:
+    def sim_setup(self, indv_id: int, indv_dir: Path, json_str: str) -> any:
         """
         Create file to build individual and setup simulation in XFdtd before simulation.
 
@@ -193,12 +200,12 @@ class XFdtdSim:
             None if Paths not found.
 
         """
-        sim_dir = self.xfproj / "Simulations" / f"{indv:06d}"
+        sim_dir = self.xfproj / "Simulations" / f"{indv_id:06d}"
         if not sim_dir.exists():
-            print(f"Running modelling for indv {indv}")
-            setup_json = self.xf_run_scripts / "setup" / f"{indv}.json"
+            print(f"Running modelling for indv {indv_id}")
+            setup_json = self.xf_run_scripts / "setup" / f"{indv_id}.json"
             setup_data = {
-                "indv": indv,
+                "indv": indv_id,
                 "indvdata": json.loads(json_str),
                 "indv_dir": str(indv_dir),
                 "units": f" {self.cfg.xf_units}",
@@ -210,13 +217,15 @@ class XFdtdSim:
             with open(setup_json, "w") as f:
                 f.write(json.dumps(setup_data, indent=4))
 
+            shutil.copy2(setup_json, indv_dir / f"{indv_id}.json")
+
             setup_done = sim_dir / "status.dat"
             while True:
                 if setup_done.exists():
                     with open(setup_done) as f:
                         content = f.read()
                     if "Created" in content:
-                        print(f"Simulation created for individual {indv}.")
+                        print(f"Simulation created for individual {indv_id}.")
                         # Makes images go away????
                         setup_json.unlink()
                         break
@@ -348,12 +357,30 @@ class XFdtdSim:
 
         await asyncio.to_thread(subprocess.run, cmd, check=True)
 
-    async def persistent_xf(self) -> None:
-        """Check if GUI is open, if it's not open with persistent XF script running."""
-        async with self._xf_lock:
-            if not is_running("xfui_exe"):
-                print("Opening Persistent XF GUI")
-                self.run_xfdtd(self.run_dir)
+    async def persistent_xf(self):
+        """
+        Ensures only one XF GUI instance is launched at a time.
+        Respects the GUI lock without using a one-shot flag.
+        """
+        async with XFdtdSim._xf_lock:
+            # Check if a GUI instance is already running
+            if is_running("xfui_exe"):
+                # Someone else started it, or it was already running
+                return
+
+            # Launch the GUI
+            print("Opening Persistent XF GUI")
+
+            self.run_xfdtd(self.run_dir)
+
+            # Wait for the OS to register the process
+            # This prevents another task from thinking GUI isn't running yet
+            for _ in range(10):  # retry for ~5 seconds
+                await asyncio.sleep(0.5)
+                if is_running("xfui_exe"):
+                    break
+            else:
+                print("Warning: XF GUI did not appear in OS after launch")
 
 
 # Helper functions

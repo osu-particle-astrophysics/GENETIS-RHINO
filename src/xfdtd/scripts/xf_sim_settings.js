@@ -18,7 +18,7 @@ function create_pec() {
 
   // Check if material already exists
   if (null != App.getActiveProject().getMaterialList().getMaterial(pec.name)) {
-    App.getActiveProject().getMaterialList().deleteMaterial(pec.name);
+    App.getActiveProject().getMaterialList().removeMaterial(pec.name);
   }
   App.getActiveProject().getMaterialList().addMaterial(pec);
 }
