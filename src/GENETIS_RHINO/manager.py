@@ -10,7 +10,6 @@ from src.GENETIS_RHINO.evolver import NSGA2
 from src.GENETIS_RHINO.genotype import Genotype
 from src.GENETIS_RHINO.parameters import ParametersObject
 from src.GENETIS_RHINO.phenotype import Phenotype
-from src.xfdtd.xf_job import XFdtdSim
 from src.xfdtd.antenna_fitness import antenna_performance
 
 
@@ -80,10 +79,10 @@ class Manager:
         run_dir.mkdir(parents=True, exist_ok=True)
 
         # Define async function to run simulations with concurrency limit
-        async def run_all_simulations():
+        async def run_all_simulations() -> None:
             sem = asyncio.Semaphore(cfg.xf_keys)
 
-            async def simulate(indv: Phenotype):
+            async def simulate(indv: Phenotype) -> None:
                 async with sem:
                     await antenna_performance(run_dir, cfg, indv)
 

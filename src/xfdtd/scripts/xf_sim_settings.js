@@ -28,15 +28,17 @@ function create_grid(setup_data) {
   useProGridCellSizes = true;
   var grid = App.getActiveProject().getGrid();
   var cell_sizes = grid.getCellSizesSpecification();
-
+  // TODO: this needs to be adjusted for more efficient simulations, probably after setting real minimum and maximum values for the antennas
+  // Jacob - Currently setting to the width of waveguide as that is the length of the feed but maybe this is misinformed.
   cell_sizes.setTargetSizes(
     Cartesian3D(
-      3 + setup_data.units,
-      3 + setup_data.units,
-      3 + setup_data.units
+      MathUtils.evaluate(setup_data.indvdata.waveguide_width) +
+        setup_data.units,
+      MathUtils.evaluate(setup_data.indvdata.waveguide_width) +
+        setup_data.units,
+      MathUtils.evaluate(setup_data.indvdata.waveguide_width) + setup_data.units
     )
   );
-  cell_sizes.setMinimumSizes(Cartesian3D(".5", ".5", ".5"));
   cell_sizes.setMinimumIsRatioX(true);
   cell_sizes.setMinimumIsRatioY(true);
   cell_sizes.setMinimumIsRatioZ(true);

@@ -62,8 +62,16 @@ function create_feeds(setup_data) {
 
   component1.setAsPort(true);
   //component2.setAsPort( true );
-  var coordinate1 = new CoordinateSystemPosition(-wg_width, 0, -half_wg_height);
-  var coordinate2 = new CoordinateSystemPosition(wg_width, 0, -half_wg_height);
+  var coordinate1 = new CoordinateSystemPosition(
+    -MathUtils.evaluate(wg_width) / 2,
+    0,
+    -half_wg_height
+  );
+  var coordinate2 = new CoordinateSystemPosition(
+    MathUtils.evaluate(wg_width) / 2,
+    0,
+    -half_wg_height
+  );
 
   //var coordinate3 = new CoordinateSystemPosition( 0, -x2, height);
   //var coordinate4 = new CoordinateSystemPosition( 0, x2, height);

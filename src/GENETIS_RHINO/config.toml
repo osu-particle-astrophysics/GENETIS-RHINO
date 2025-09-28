@@ -22,17 +22,17 @@ enable_sparams = true   # enable or disable sparams for S11 and other sets of da
 # Horn Parameters
 NUM_WALL_PAIRS = 2
 
-MIN_FLARE_LENGTH = 2.0   # TODO confirm this with horn guys
-MAX_FLARE_LENGTH = 5.0   # TODO confirm this with horn guys
+MIN_FLARE_LENGTH = 10.0   # TODO confirm this with horn guys
+MAX_FLARE_LENGTH = 20.0   # TODO confirm this with horn guys
 
-MIN_WAVEGUIDE_HEIGHT = 200.0
-MAX_WAVEGUIDE_HEIGHT = 1000.0
+MIN_WAVEGUIDE_HEIGHT = 10.0
+MAX_WAVEGUIDE_HEIGHT = 30.0
 
-MIN_WAVEGUIDE_LENGTH = 100.0
-MAX_WAVEGUIDE_LENGTH = 1000.0
+MIN_WAVEGUIDE_LENGTH = 10.0
+MAX_WAVEGUIDE_LENGTH = 30.0
 
-MIN_WAVEGUIDE_WIDTH = 100.0   # TODO confirm this with horn guys
-MAX_WAVEGUIDE_WIDTH = 1000.0  # TODO confirm this with horn guys
+MIN_WAVEGUIDE_WIDTH = 10.0   # TODO confirm this with horn guys
+MAX_WAVEGUIDE_WIDTH = 30.0  # TODO confirm this with horn guys
 
 # WallPair Parameters
 MIN_ANGLE = 0.0              # degrees; exclusive

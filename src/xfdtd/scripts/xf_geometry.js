@@ -1,9 +1,8 @@
 // Version of RHINO geometry script for testing
 // TODO: Add Ridges
-// TODO: Where in waveguides do feeds need to be placed? Currently assuming halfway
+// TODO: Where in waveguides do feeds need to be placed? Currently assuming half of the height.
 // TODO: Do we need two feeds for horizontal and vertical polarizations?
 // TODO: Is flare being constructed correctly? I don't totally understand the different angles for wall pairs.
-// TODO: Isn't this constructing an Antenna 2x as big as wanted?
 // TODO: Is length defined as the y direction and width the x direction?
 
 // XFdtd functions related to building antenna geometry
@@ -14,8 +13,10 @@ function build_flare(setup_data) {
     var unit_scale = 0.01;
   }
   var indvdata = setup_data.indvdata;
-  var wg_length = MathUtils.evaluate(indvdata.waveguide_length) * unit_scale;
-  var wg_width = MathUtils.evaluate(indvdata.waveguide_width) * unit_scale;
+  var wg_length =
+    (MathUtils.evaluate(indvdata.waveguide_length) / 2) * unit_scale;
+  var wg_width =
+    (MathUtils.evaluate(indvdata.waveguide_width) / 2) * unit_scale;
   var wall0_slope = Math.tan(
     (MathUtils.evaluate(indvdata.wall_pair0.angle) * Math.PI) / 180
   );
