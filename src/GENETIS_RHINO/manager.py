@@ -4,6 +4,8 @@ import asyncio
 import pathlib
 import random
 import shutil
+import time
+from statistics import mean
 
 from src.GENETIS_RHINO.analysis import Analysis
 from src.GENETIS_RHINO.evolver import NSGA2
@@ -78,15 +80,26 @@ class Manager:
             shutil.rmtree(run_dir)  # remove directory and all its contents
         run_dir.mkdir(parents=True, exist_ok=True)
 
-        # Define async function to run simulations with concurrency limit
         async def run_all_simulations() -> None:
             sem = asyncio.Semaphore(cfg.xf_keys)
+            times = []  # store elapsed times
 
             async def simulate(indv: Phenotype) -> None:
                 async with sem:
+                    start_time = time.perf_counter()
                     await antenna_performance(run_dir, cfg, indv)
+                    elapsed = time.perf_counter() - start_time
+
+                    # Record and update running average
+                    times.append(elapsed)
+                    avg_time = mean(times)
+
+                    print(f"[{len(times):03d}/{len(self.population)}] Antenna done in {elapsed:.2f}s | Running avg: {avg_time:.2f}s")
 
             await asyncio.gather(*(simulate(indv) for indv in self.population))
+
+            print("\n All simulations complete.")
+            print(f"Final average antenna_performance time: {mean(times):.2f} seconds ({len(times)} runs total)")
 
         # Run all simulations in one event loop
         asyncio.run(run_all_simulations())

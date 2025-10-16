@@ -17,7 +17,7 @@ function create_feeds(setup_data) {
   // Create a gaussian derivative input wave
   var waveform = new Waveform();
   var GDer = new GaussianDerivativeWaveformShape();
-  GDer.pulseWidth = 2e-9;
+  GDer.pulseWidth = 8e-9; // NOTE: Changed to reflect new freq range
   waveform.setWaveformShape(GDer);
   waveform.name = "Gaussian Derivative";
   var waveformInList = waveformList.addWaveform(waveform);

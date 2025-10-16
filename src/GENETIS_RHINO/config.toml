@@ -11,32 +11,32 @@ percent_no_ridge_at_start = 0.1  # the % of indiv generated w/ no ridge when
 ### XFdtd Parameters ###
 xf_keys = 1             # number of XFdtd keys to use for a run
 xf_units = "cm"         # units for scaling geometry in XFdtd
-freq_start = 200        # Starting simulation frequency
-freq_end = 800          # Ending simulation frequency
-freq_step = 16.67       # Step size to take in frequency
+freq_start = 60        # Starting simulation frequency # TODO: Is this right frequency range?
+freq_end = 85          # Ending simulation frequency
+freq_step = 5.0       # Step size to take in frequency
 freq_scale = "MHz"      # units for scaling frequencies in XFdtd
-enable_sparams = true   # enable or disable sparams for S11 and other sets of data
+enable_sparams = false   # enable or disable sparams for S11 and other sets of data
 
 ### Individual Parameters ###
 
 # Horn Parameters
 NUM_WALL_PAIRS = 2
 
-MIN_FLARE_LENGTH = 10.0   # TODO confirm this with horn guys
-MAX_FLARE_LENGTH = 20.0   # TODO confirm this with horn guys
+MIN_FLARE_LENGTH = 200.0   # TODO confirm this with horn guys
+MAX_FLARE_LENGTH = 800.0   # TODO confirm this with horn guys
 
-MIN_WAVEGUIDE_HEIGHT = 10.0
-MAX_WAVEGUIDE_HEIGHT = 30.0
+MIN_WAVEGUIDE_HEIGHT = 200.0
+MAX_WAVEGUIDE_HEIGHT = 800.0
 
-MIN_WAVEGUIDE_LENGTH = 10.0
-MAX_WAVEGUIDE_LENGTH = 30.0
+MIN_WAVEGUIDE_LENGTH = 100.0
+MAX_WAVEGUIDE_LENGTH = 1000.0
 
-MIN_WAVEGUIDE_WIDTH = 10.0   # TODO confirm this with horn guys
-MAX_WAVEGUIDE_WIDTH = 30.0  # TODO confirm this with horn guys
+MIN_WAVEGUIDE_WIDTH = 100.0   # TODO confirm this with horn guys
+MAX_WAVEGUIDE_WIDTH = 1000.0  # TODO confirm this with horn guys
 
 # WallPair Parameters
-MIN_ANGLE = 0.0              # degrees; exclusive
-MAX_ANGLE = 90.0             # degrees; inclusive
+MIN_ANGLE = 3.0              # degrees; exclusive
+MAX_ANGLE = 30.0             # degrees; inclusive
 
 MIN_RIDGE_HEIGHT = 0.0       # % of horn; exclusive
 MAX_RIDGE_HEIGHT = 100.0     # % of horn; inclusive

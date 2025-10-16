@@ -173,6 +173,7 @@ class XFdtdSim:
         indv_dict["waveguide_width"] = indv_genes.waveguide_width
         for i, wall_pair in enumerate(indv_genes.walls):
             walls = {}
+            walls["number"] = i
             walls["angle"] = wall_pair.angle
             walls["ridge_height"] = wall_pair.ridge_height
             walls["ridge_width_top"] = wall_pair.ridge_width_top
@@ -206,6 +207,7 @@ class XFdtdSim:
             setup_json = self.xf_run_scripts / "setup" / f"{indv_id}.json"
             setup_data = {
                 "indv": indv_id,
+                "num_wallpairs": self.cfg.NUM_WALL_PAIRS,  # TODO: Same for all individuals?
                 "indvdata": json.loads(json_str),
                 "indv_dir": str(indv_dir),
                 "units": f" {self.cfg.xf_units}",

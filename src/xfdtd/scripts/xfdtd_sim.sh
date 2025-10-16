@@ -4,7 +4,7 @@
 #SBATCH -N 1
 #SBATCH -n 40
 #SBATCH -G 2
-#SBATCH -t 00:30:00
+#SBATCH -t 02:00:00
 #SBATCH --mem-per-gpu=178gb
 
 module load xfdtd/7.11.0.3

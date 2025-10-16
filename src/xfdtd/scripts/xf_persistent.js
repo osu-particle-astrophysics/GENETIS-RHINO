@@ -52,12 +52,15 @@ function xf_setup(setup_data) {
   if (sim_dir.exists()) {
     return;
   } else {
+    // Function calls for Antenna geometry building
     create_pec();
     // TODO: Add function call to build ridges
     build_waveguide(setup_data);
-    build_flare(setup_data);
+    build_horn(setup_data, setup_data.indvdata.wall_pair0);
+    build_horn(setup_data, setup_data.indvdata.wall_pair1);
     create_feeds(setup_data);
 
+    // Function calls for Simulation setup
     create_grid(setup_data);
     create_sensors(setup_data);
     create_sim_data(setup_data);

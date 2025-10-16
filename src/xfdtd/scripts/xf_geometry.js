@@ -1,51 +1,59 @@
 // Version of RHINO geometry script for testing
-// TODO: Add Ridges
+// TODO: Fix Ridges function
 // TODO: Where in waveguides do feeds need to be placed? Currently assuming half of the height.
 // TODO: Do we need two feeds for horizontal and vertical polarizations?
-// TODO: Is flare being constructed correctly? I don't totally understand the different angles for wall pairs.
-// TODO: Is length defined as the y direction and width the x direction?
 
 // XFdtd functions related to building antenna geometry
 
-function build_flare(setup_data) {
+function build_horn(setup_data, wall_genes) {
   // Makes the outer walls of the horn antenna
+  // Gene conversion + setup for wall dimensions
   if (setup_data.units == " cm") {
+    // TODO: Add more if ever needed..
     var unit_scale = 0.01;
   }
   var indvdata = setup_data.indvdata;
   var wg_length =
-    (MathUtils.evaluate(indvdata.waveguide_length) / 2) * unit_scale;
-  var wg_width =
-    (MathUtils.evaluate(indvdata.waveguide_width) / 2) * unit_scale;
-  var wall0_slope = Math.tan(
-    (MathUtils.evaluate(indvdata.wall_pair0.angle) * Math.PI) / 180
+    MathUtils.evaluate(indvdata.waveguide_length / 2) * unit_scale; // NOTE: Dividing by 2 due to edge definitions
+  var wg_width = MathUtils.evaluate(indvdata.waveguide_width / 2) * unit_scale;
+  var wall_slope = Math.tan(
+    (MathUtils.evaluate(wall_genes.angle) * Math.PI) / 180
   );
-  if (indvdata.wall_pair1.angle != null) {
-    var wall1_slope = Math.tan(
-      (MathUtils.evaluate(indvdata.wall_pair1.angle) * Math.PI) / 180
-    );
+  var flare_height = MathUtils.evaluate(indvdata.flare_length) * unit_scale; // TODO: Is this per wall pair?
+  Output.println(wall_slope);
+  if (wall_genes.number == 0) {
+    // First wall pair always starts at base of waveguide
+    var horn_width = wg_width;
+    var horn_length = wg_length;
+    var start_height = 0.0;
   } else {
-    var wall1_slope = wall0_slope;
+    // All others start at the end of the previous wall pair.
+    var prev_wall_num = wall_genes.number - 1;
+    var prev_wall_slope = Math.tan(
+      (MathUtils.evaluate(indvdata["wall_pair" + prev_wall_num].angle) *
+        Math.PI) /
+        180
+    );
+    var horn_width = wg_width + flare_height * prev_wall_slope;
+    var horn_length = wg_length + flare_height * prev_wall_slope;
+    var start_height = flare_height * MathUtils.evaluate(wall_genes.number);
   }
-  var flare_height = MathUtils.evaluate(indvdata.flare_length) * unit_scale;
-  Output.println(wall0_slope);
-  Output.println(wall1_slope);
   // Edge definitions
   var edge1 = Line(
-    new Cartesian3D(-wg_width, -wg_length, 0),
-    new Cartesian3D(-wg_width, wg_length, 0)
+    new Cartesian3D(-horn_width, -horn_length, 0),
+    new Cartesian3D(-horn_width, horn_length, 0)
   );
   var edge2 = Line(
-    new Cartesian3D(-wg_width, wg_length, 0),
-    new Cartesian3D(wg_width, wg_length, 0)
+    new Cartesian3D(-horn_width, horn_length, 0),
+    new Cartesian3D(horn_width, horn_length, 0)
   );
   var edge3 = Line(
-    new Cartesian3D(wg_width, wg_length, 0),
-    new Cartesian3D(wg_width, -wg_length, 0)
+    new Cartesian3D(horn_width, horn_length, 0),
+    new Cartesian3D(horn_width, -horn_length, 0)
   );
   var edge4 = Line(
-    new Cartesian3D(wg_width, -wg_length, 0),
-    new Cartesian3D(-wg_width, -wg_length, 0)
+    new Cartesian3D(horn_width, -horn_length, 0),
+    new Cartesian3D(-horn_width, -horn_length, 0)
   );
 
   // Declare sketches to be made from the edges
@@ -53,51 +61,35 @@ function build_flare(setup_data) {
   flare_sketch.addEdges([edge1, edge2, edge3, edge4]);
 
   // Now we need to extrude the edges to get height
-  var wall_pair0 = new Extrude(flare_sketch, flare_height); // Makes an Extrude
-  var wall_pair1 = new Extrude(flare_sketch, flare_height);
-  var wall_pair0_options = wall_pair0.getOptions(); // Gives the possible options for
-  var wall_pair1_options = wall_pair1.getOptions();
+  var wall_pair = new Extrude(flare_sketch, flare_height); // Makes an Extrude
+  var wall_pair_options = wall_pair.getOptions(); // Gives the possible options for
   // We will use the draft law option to extrude linearly
-  wall_pair0_options.draftOption = SweepOptions.DraftLaw; // allows for draftlaw
-  wall_pair1_options.draftOption = SweepOptions.DraftLaw;
-  wall_pair0_options.draftLaw = "(" + wall0_slope + "*x)"; // Set the expression for the extrude
-  wall_pair1_options.draftLaw = "(" + wall1_slope + "*x)";
-  wall_pair0_options.draftOption = 4; // 4 indicates we use draftlaw
-  wall_pair1_options.draftOption = 4;
+  wall_pair_options.draftOption = SweepOptions.DraftLaw; // allows for draftlaw
+  wall_pair_options.draftLaw = "(" + wall_slope + "*x)"; // Set the expression for the extrude
+  wall_pair_options.draftOption = 4; // 4 indicates we use draftlaw
   //Walter - Change the gap type to Extended to get the desired shape
-  wall_pair0_options.gapType = SweepOptions.Extended; // I actually don't like this when we have x^2, but it doesn't do much for just x
-  wall_pair1_options.gapType = SweepOptions.Extended;
+  wall_pair_options.gapType = SweepOptions.Extended; // I actually don't like this when we have x^2, but it doesn't do much for just x
   //Walter - Create a shell instead of a solid part
-  wall_pair0_options.createSolid = false; // This way the shape isn't filled in
-  wall_pair1_options.createSolid = false;
-  wall_pair0.setOptions(wall_pair0_options); // Sets the settings we assigned above
-  wall_pair1.setOptions(wall_pair1_options);
+  wall_pair_options.createSolid = false; // This way the shape isn't filled in
+  wall_pair.setOptions(wall_pair_options); // Sets the settings we assigned above
 
   // Make a recipe for a model
-  var wall_pair0_recipe = new Recipe();
-  wall_pair0_recipe.append(wall_pair0);
-  var wall_pair0_model = new Model();
-  wall_pair0_model.setRecipe(wall_pair0_recipe);
-  wall_pair0_model.name = "Wall Pair 0 Flare";
-  wall_pair0_model.getCoordinateSystem().translate(new Cartesian3D(0, 0, 0)); // Makes the model start at the origin
-  var wall_pair1_recipe = new Recipe();
-  wall_pair1_recipe.append(wall_pair0);
-  var wall_pair1_model = new Model();
-  wall_pair1_model.setRecipe(wall_pair0_recipe);
-  wall_pair1_model.name = "Wall Pair 1 Flare";
-  wall_pair1_model.getCoordinateSystem().translate(new Cartesian3D(0, 0, 0)); // Makes the model start at the origin
+  var wall_pair_recipe = new Recipe();
+  wall_pair_recipe.append(wall_pair);
+  var wall_pair_model = new Model();
+  wall_pair_model.setRecipe(wall_pair_recipe);
+  wall_pair_model.name = "Wall Pair" + wall_genes.number;
+  wall_pair_model
+    .getCoordinateSystem()
+    .translate(new Cartesian3D(0, 0, start_height));
 
   // Set the material for these parts
   var flare_project = App.getActiveProject()
     .getGeometryAssembly()
-    .append(wall_pair0_model); // Adds the model to the project
+    .append(wall_pair_model); // Adds the model to the project
   var pec_material = App.getActiveProject()
     .getMaterialList()
     .getMaterial("PEC");
-  App.getActiveProject().setMaterial(flare_project, pec_material);
-  var flare_project = App.getActiveProject()
-    .getGeometryAssembly()
-    .append(wall_pair1_model);
   App.getActiveProject().setMaterial(flare_project, pec_material);
 }
 
@@ -107,8 +99,9 @@ function build_waveguide(setup_data) {
     var unit_scale = 0.01;
   }
   var indvdata = setup_data.indvdata;
-  var wg_length = MathUtils.evaluate(indvdata.waveguide_length) * unit_scale;
-  var wg_width = MathUtils.evaluate(indvdata.waveguide_width) * unit_scale;
+  var wg_length =
+    MathUtils.evaluate(indvdata.waveguide_length / 2) * unit_scale;
+  var wg_width = MathUtils.evaluate(indvdata.waveguide_width / 2) * unit_scale;
   var wg_height = MathUtils.evaluate(indvdata.waveguide_height) * unit_scale;
   // Make the edges to define the square
   var edge1 = Line(
@@ -172,10 +165,59 @@ function build_waveguide(setup_data) {
 // Top y: distance from center
 // Top z: distance from center
 // tau: Arbitrary time limit used for the parametric curves (the ridge shapes)
-// beta: determines the curvature of the ridges
-// S: Side length of bottom of walls
 // m: Slope of walls (currently set to 1)
-function build_ridges(x_0, y_0, z_0, x_f, y_f, z_f, tau, beta, S, m) {
+function build_ridges(setup_data, wall_genes) {
+  // Setting up ridge dimensions
+  if (setup_data.units == " cm") {
+    var unit_scale = 0.01;
+  }
+  var tau = 0.26; // Normalized parametric time--no good reason to be 0.26, but it's fine
+  var indvdata = setup_data.indvdata;
+  // Waveguide Dimensions
+  var wg_length = MathUtils.evaluate(indvdata.waveguide_length) * unit_scale;
+  var wg_width = MathUtils.evaluate(indvdata.waveguide_width) * unit_scale;
+
+  // Wall Pair Dimensions
+  var wall_slope = Math.tan(
+    (MathUtils.evaluate(wall_genes.angle) * Math.PI) / 180
+  );
+  var flare_height = MathUtils.evaluate(indvdata.flare_length) * unit_scale;
+
+  // Ridge % Values
+  var ridge_height = MathUtils.evaluate(wall_genes.ridge_height);
+  var ridge_width_top = MathUtils.evaluate(wall_genes.ridge_width_top);
+  var ridge_width_bottom = MathUtils.evaluate(wall_genes.ridge_width_bottom);
+  var ridge_thick_top = MathUtils.evaluate(wall_genes.ridge_thickness_top);
+  var ridge_thick_bottom = MathUtils.evaluate(
+    wall_genes.ridge_thickness_bottom
+  );
+
+  // Ridge Height Conversion
+  var r_h = ridge_height * flare_height;
+  // Ridge width top and bottom conversion
+  var r_w_t = ridge_width_top * wg_width; // TODO: This needs to be the width of the flare at the top of where the ridge stops
+  var r_w_b = ridge_width_bottom * wg_width;
+  // Ridge Thickness top and bottom conversion
+  var r_thick_t = ridge_thick_top * wg_length; // TODO: Is this correct??
+  var r_thick_b = ridge_thick_bottom * wg_length;
+
+  // Setting the Variables needed
+  // TODO: THIS SHOULD BE TEMPORARY FOR TESTING, IDEALLY CHANGE THE BELOW VARIABLES.
+  // Values for actual ridge building
+  if (wall_genes.number == 0) {
+    var z_0 = 0.0;
+  } else {
+    var z_0 = flare_height * MathUtils.evaluate(wall_genes.number);
+  }
+  var m = wall_slope;
+  var x_0 = r_w_b / 2;
+  var x_f = r_w_t / 2;
+  var y_0 = r_thick_b / 2;
+  var y_f = r_thick_t / 2;
+  var z_f = r_h;
+  var beta = wall_slope; // TODO: this follows slope of wall pair?
+  var num_ridges = 2;
+
   // Curves (Z is logarithmic in t)
   var Log1 = new LawEdge(
     "" + x_0 + " + (" + z_f + "-" + x_0 + ")/" + tau + "*u",
@@ -320,8 +362,8 @@ function build_ridges(x_0, y_0, z_0, x_f, y_f, z_f, tau, beta, S, m) {
   var cov = new Array();
   cov.push(new Cover(straightEdge1));
   cov.push(new Cover(straightEdge2));
-  cov.push(new Cover(curvedLog1));
-  cov.push(new Cover(curvedLog2));
+  //cov.push(new Cover(curvedLog1));
+  //cov.push(new Cover(curvedLog2));
   cov.push(new Cover(topRectangle));
   cov.push(new Cover(bottomRectangle));
 
@@ -335,7 +377,7 @@ function build_ridges(x_0, y_0, z_0, x_f, y_f, z_f, tau, beta, S, m) {
     r.append(ePattern);
     var m = new Model();
     m.setRecipe(r);
-    m.name = "Test Surface " + (w + 1);
+    m.name = "Ridge " + (w + 1) + "_" + wall_genes.number;
     //WALTER - Seperate array for the models, though we could just get them from the GemoetryAssembly again
     models.append(m);
     App.getActiveProject().setMaterial(m, pecMaterial);
