@@ -1,7 +1,7 @@
 function create_feeds(setup_data) {
   // Creates feeds in waveguide
   if (setup_data.units == " cm") {
-    var unit_scale = 0.1;
+    var unit_scale = 0.01;
   }
   var indvdata = setup_data.indvdata;
   var half_wg_height =
