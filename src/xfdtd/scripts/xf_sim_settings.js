@@ -25,60 +25,45 @@ function create_pec() {
 
 // Make the grid spacing (or "resolution")
 function create_grid(setup_data) {
-  const unit_scale = setup_data.units === " cm" ? 0.01 : 1.0;
-  const indvdata = setup_data.indvdata;
-  const padding = "2"; // air buffer
+  // Setup frequencies of interest (sets the minimum and maximum bounds for the grid sizing)
+  // Setting Grid sizing
+  useProGridCellSizes = true;
 
-  const horn_height =
-    (indvdata.flare_height / 2) *
-    MathUtils.evaluate(setup_data.num_wallpairs) *
-    unit_scale;
-  const half_width =
-    (MathUtils.evaluate(indvdata.waveguide_width) / 2) * unit_scale;
-  const half_length =
-    (MathUtils.evaluate(indvdata.waveguide_length) / 2) * unit_scale;
-  const wg_height = MathUtils.evaluate(indvdata.waveguide_height) / 2;
+  App.getActiveProject()
+    .getGrid()
+    .getCellSizesSpecification()
+    .setTargetSizes(
+      new Cartesian3D(
+        3 + setup_data.units,
+        3 + setup_data.units,
+        3 + setup_data.units
+      )
+    );
+  App.getActiveProject()
+    .getGrid()
+    .getCellSizesSpecification()
+    .setMinimumSizes(new Cartesian3D(0.5, 0.5, 0.5));
+  App.getActiveProject()
+    .getGrid()
+    .getCellSizesSpecification()
+    .setMinimumIsRatioX(true);
+  App.getActiveProject()
+    .getGrid()
+    .getCellSizesSpecification()
+    .setMinimumIsRatioY(true);
+  App.getActiveProject()
+    .getGrid()
+    .getCellSizesSpecification()
+    .setMinimumIsRatioZ(true);
 
-  const grid = App.getActiveProject().getGrid();
-
-  // --- Air padding ---
-  grid.specifyPaddingExtent(
-    new Cartesian3D(padding, padding, padding),
-    new Cartesian3D(padding, padding, padding),
-    true,
-    true
-  );
-
-  // --- Overall bounding box for horn + waveguide ---
-  const fullBox = new BoundingBox3D(
-    new Cartesian3D(-half_width, -half_length, -wg_height),
-    new Cartesian3D(half_width, half_length, horn_height)
-  );
-
-  // --- Uniform cell settings ---
-  const uniformCell = new CellSizesSpecification();
-  uniformCell.setTargetSizes(new Cartesian3D("0.035 m", "0.035 m", "0.035 m"));
-  uniformCell.setMinimumSizes(new Cartesian3D("0.017 m", "0.017 m", "0.017 m"));
-  uniformCell.setMinimumIsRatioX(true);
-  uniformCell.setMinimumIsRatioY(true);
-  uniformCell.setMinimumIsRatioZ(true);
-
-  grid.addManualGridRegion(Grid.X | Grid.Y | Grid.Z, fullBox, uniformCell);
-
-  // --- Set boundary conditions directly on grid ---
-  // X-axis
-  grid.xLowerBoundaryType = "PMC"; // magnetic symmetry if geometry centered along x
-  grid.xUpperBoundaryType = "Absorbing";
-
-  // Y-axis
-  grid.yLowerBoundaryType = "PMC"; // magnetic symmetry if geometry centered along y
-  grid.yUpperBoundaryType = "Absorbing";
-
-  // Z-axis (propagation)
-  grid.zLowerBoundaryType = "Absorbing";
-  grid.zUpperBoundaryType = "Absorbing";
-  grid.absorptionType = "PML"; // PML absorbing boundary
-  grid.numPMLLayers = "10";
+  App.getActiveProject()
+    .getGrid()
+    .specifyPaddingExtent(
+      new Cartesian3D("20", "20", "20"),
+      new Cartesian3D("20", "20", "20"),
+      true,
+      true
+    );
 }
 
 // Make the sensors to detect the emitted signal

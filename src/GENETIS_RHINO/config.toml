@@ -29,10 +29,10 @@ MIN_WAVEGUIDE_HEIGHT = 200.0
 MAX_WAVEGUIDE_HEIGHT = 800.0
 
 MIN_WAVEGUIDE_LENGTH = 100.0
-MAX_WAVEGUIDE_LENGTH = 1000.0
+MAX_WAVEGUIDE_LENGTH = 800.0
 
 MIN_WAVEGUIDE_WIDTH = 100.0   # TODO confirm this with horn guys
-MAX_WAVEGUIDE_WIDTH = 1000.0  # TODO confirm this with horn guys
+MAX_WAVEGUIDE_WIDTH = 800.0  # TODO confirm this with horn guys
 
 # WallPair Parameters
 MIN_ANGLE = 3.0              # degrees; exclusive

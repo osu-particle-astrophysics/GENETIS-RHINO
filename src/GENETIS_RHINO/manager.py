@@ -74,7 +74,7 @@ class Manager:
             self.population.append(p)
 
         # Simulate Individuals in XFdtd
-        run_dir = pathlib.Path("/users/PAS1977/jacobweiler/GENETIS/test_repos/GENETIS-RHINO/test_run1")  # TODO: Formalize this
+        run_dir = pathlib.Path("/users/PAS1977/jacobweiler/GENETIS/test_repos/GENETIS-RHINO/test_run2")  # TODO: Formalize this
         # Jacob - Doing this for testing
         if run_dir.exists() and run_dir.is_dir():
             shutil.rmtree(run_dir)  # remove directory and all its contents

@@ -53,6 +53,11 @@ function xf_setup(setup_data) {
     return;
   } else {
     // Function calls for Antenna geometry building
+    var lastFreq = setup_data.freqs[setup_data.freqs.length - 1];
+    App.getActiveProject().getFrequencyRangeOfInterest().lowerBound =
+      setup_data.freqs[0] + setup_data.freq_scale;
+    App.getActiveProject().getFrequencyRangeOfInterest().upperBound =
+      lastFreq + setup_data.freq_scale;
     create_pec();
     // TODO: Add function call to build ridges
     build_waveguide(setup_data);
@@ -65,7 +70,6 @@ function xf_setup(setup_data) {
     create_sensors(setup_data);
     create_sim_data(setup_data);
     queue_sim(setup_data);
-    make_image(setup_data);
 
     clearLists(10000, 100);
   }
